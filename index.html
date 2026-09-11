@@ -1,0 +1,1707 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Navy Focus</title>
+<meta name="theme-color" content="#0B132B">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230B132B'/%3E%3Ccircle cx='32' cy='32' r='16' fill='none' stroke='%235BC0BE' stroke-width='4'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg-main:#0B132B;
+    --bg-surface:#1C2541;
+    --border-color:#3A506B;
+    --accent-primary:#5BC0BE;
+    --accent-secondary:#6FFFE9;
+    --text-main:#E0E6ED;
+    --text-muted:#8D99AE;
+    --correct:#2E7D32;
+    --incorrect:#C62828;
+    --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: "Fira Code", "Courier New", monospace;
+    --nav-h: 68px;
+    --header-h: 60px;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --ease: cubic-bezier(.4,0,.2,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    background:
+      radial-gradient(circle at 1px 1px, rgba(93,120,150,0.16) 1px, transparent 0) 0 0/22px 22px,
+      var(--bg-main);
+    color:var(--text-main);
+    font-family:var(--font-main);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    overflow-x:hidden;
+    line-height:1.45;
+  }
+  button{font-family:inherit;cursor:pointer;}
+  ::selection{background:var(--accent-primary);color:var(--bg-main);}
+  :focus-visible{outline:2px solid var(--accent-secondary);outline-offset:2px;border-radius:2px;}
+  a{color:var(--accent-primary);}
+  h1,h2,h3,h4{letter-spacing:-0.01em;}
+
+  /* ---------- App Shell ---------- */
+  #app{
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+  }
+  header.topbar{
+    height:var(--header-h);
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 20px;
+    background:rgba(28,37,65,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--border-color);
+    position:sticky;
+    top:0;
+    z-index:50;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    font-size:15.5px;
+  }
+  .brand-mark{width:22px;height:22px;flex:0 0 auto;}
+  .brand-mark circle{fill:none;stroke:var(--accent-primary);stroke-width:2;}
+  .brand-mark circle.inner{stroke:var(--accent-secondary);stroke-dasharray:2 4;}
+  .brand-name{white-space:nowrap;}
+  .brand-name .muted-part{color:var(--text-muted);font-weight:400;}
+
+  .topbar-right{
+    display:flex;
+    align-items:center;
+    gap:16px;
+  }
+  .status-pill{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    font-size:11.5px;
+    color:var(--text-muted);
+    padding:5px 11px 5px 9px;
+    border:1px solid var(--border-color);
+    border-radius:20px;
+  }
+  .status-pill .led{
+    width:6px;height:6px;border-radius:50%;
+    background:var(--correct);
+    box-shadow:0 0 0 3px rgba(46,125,50,0.18);
+  }
+  .status-pill.offline .led{background:var(--incorrect);box-shadow:0 0 0 3px rgba(198,40,40,0.18);}
+  .status-pill.offline .label::after{content:"Offline";}
+  .status-pill:not(.offline) .label::after{content:"Online";}
+
+  .timer-widget{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    cursor:pointer;
+    padding:5px 10px 5px 5px;
+    border-radius:20px;
+    border:1px solid transparent;
+    transition:border-color 0.2s var(--ease), background 0.2s var(--ease);
+  }
+  .timer-widget:hover{border-color:var(--border-color);background:rgba(255,255,255,0.02);}
+  .timer-ring{width:32px;height:32px;flex:0 0 auto;}
+  .timer-ring circle{fill:none;stroke-width:2.5;}
+  .timer-ring .track{stroke:var(--border-color);}
+  .timer-ring .progress{stroke:var(--accent-primary);stroke-linecap:round;transform:rotate(-90deg);transform-origin:50% 50%;transition:stroke 0.4s ease;}
+  .timer-ring.done .progress{stroke:var(--accent-secondary);}
+  .timer-label{font-size:12px;font-variant-numeric:tabular-nums;color:var(--text-muted);min-width:36px;letter-spacing:0.02em;}
+
+  .icon-btn{
+    background:transparent;
+    border:1px solid var(--border-color);
+    color:var(--text-main);
+    width:32px;height:32px;
+    border-radius:var(--radius-sm);
+    display:flex;align-items:center;justify-content:center;
+    transition:border-color 0.2s var(--ease), color 0.2s var(--ease);
+  }
+  .icon-btn:hover{border-color:var(--accent-primary);color:var(--accent-primary);}
+  .icon-btn svg{width:16px;height:16px;stroke:currentColor;}
+
+  /* ---------- Layout: sidebar (desktop) / bottom nav (mobile) ---------- */
+  .body-row{
+    display:flex;
+    flex:1 1 auto;
+    min-height:0;
+  }
+  nav.sidenav{
+    width:232px;
+    flex:0 0 auto;
+    background:var(--bg-surface);
+    border-right:1px solid var(--border-color);
+    padding:26px 14px;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  .nav-heading{
+    font-size:11px;
+    color:var(--text-muted);
+    padding:0 12px 10px 16px;
+  }
+  .nav-item{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:10px 12px 10px 16px;
+    border-radius:0 var(--radius-sm) var(--radius-sm) 0;
+    color:var(--text-muted);
+    background:transparent;
+    border:none;
+    text-align:left;
+    font-size:13.5px;
+    width:100%;
+    transition:color 0.2s var(--ease), transform 0.2s var(--ease);
+  }
+  .nav-item::before{
+    content:"";
+    position:absolute;
+    left:0;top:8px;bottom:8px;
+    width:2px;
+    background:transparent;
+    border-radius:2px;
+    transition:background 0.2s var(--ease);
+  }
+  .nav-item svg{width:17px;height:17px;stroke:currentColor;flex:0 0 auto;opacity:0.85;}
+  .nav-item:hover{color:var(--text-main);transform:translateX(1px);}
+  .nav-item.active{color:var(--accent-primary);}
+  .nav-item.active::before{background:var(--accent-primary);}
+
+  main.content{
+    flex:1 1 auto;
+    overflow-y:auto;
+    padding:36px 24px 90px 24px;
+  }
+  .container{
+    max-width:760px;
+    margin:0 auto;
+  }
+
+  nav.bottomnav{
+    display:none;
+    position:fixed;
+    bottom:0;left:0;right:0;
+    height:var(--nav-h);
+    background:rgba(28,37,65,0.96);
+    backdrop-filter:blur(6px);
+    border-top:1px solid var(--border-color);
+    z-index:50;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  nav.bottomnav .row{
+    display:flex;
+    height:var(--nav-h);
+  }
+  nav.bottomnav .nav-item{
+    flex:1 1 0;
+    flex-direction:column;
+    gap:4px;
+    align-items:center;
+    justify-content:center;
+    font-size:10px;
+    border-radius:0;
+    padding:8px 2px 6px 2px;
+  }
+  nav.bottomnav .nav-item::before{
+    left:50%;top:2px;bottom:auto;
+    width:16px;height:2px;
+    transform:translateX(-50%);
+  }
+  nav.bottomnav .nav-item:hover{transform:none;}
+
+  @media (max-width: 800px){
+    nav.sidenav{display:none;}
+    nav.bottomnav{display:block;}
+    main.content{padding:24px 16px calc(var(--nav-h) + 24px) 16px;}
+  }
+
+  /* ---------- Cards / common ---------- */
+  .card{
+    background:var(--bg-surface);
+    border:1px solid var(--border-color);
+    border-radius:var(--radius-md);
+    padding:20px;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(230px, 1fr));
+    gap:14px;
+  }
+  h1.page-title{
+    font-size:22px;
+    font-weight:600;
+    margin-bottom:5px;
+  }
+  p.page-sub{
+    color:var(--text-muted);
+    font-size:13.5px;
+    margin-bottom:26px;
+    max-width:56ch;
+    line-height:1.55;
+  }
+  .section-gap{margin-top:26px;}
+
+  .progress-bar-track{
+    height:5px;
+    background:var(--bg-main);
+    border:1px solid var(--border-color);
+    border-radius:4px;
+    overflow:hidden;
+    margin-top:9px;
+  }
+  .progress-bar-fill{
+    height:100%;
+    background:var(--accent-primary);
+    transition:width 0.6s var(--ease);
+  }
+  .card-title{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:4px;
+  }
+  .card-title h3{font-size:14px;font-weight:600;}
+  .card-title .pct{font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums;}
+
+  /* ---------- Dashboard hero ---------- */
+  .hero{
+    display:flex;
+    align-items:center;
+    gap:28px;
+    background:var(--bg-surface);
+    border:1px solid var(--border-color);
+    border-radius:var(--radius-md);
+    padding:26px 28px;
+    margin-bottom:28px;
+    flex-wrap:wrap;
+  }
+  .hero-ring-wrap{position:relative;width:112px;height:112px;flex:0 0 auto;}
+  .hero-ring-wrap svg{width:112px;height:112px;transform:rotate(-90deg);}
+  .hero-ring-wrap circle{fill:none;stroke-width:6;}
+  .hero-ring-wrap .track{stroke:var(--bg-main);}
+  .hero-ring-wrap .progress{stroke:var(--accent-primary);stroke-linecap:round;transition:stroke-dashoffset 0.7s var(--ease);}
+  .hero-ring-num{
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    flex-direction:column;
+  }
+  .hero-ring-num .num{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;}
+  .hero-ring-num .unit{font-size:11px;color:var(--text-muted);margin-top:-2px;}
+  .hero-text{flex:1 1 220px;min-width:200px;}
+  .hero-text h2{font-size:16px;font-weight:600;margin-bottom:6px;}
+  .hero-text p{font-size:13px;color:var(--text-muted);line-height:1.55;}
+
+  .module-list{
+    border:1px solid var(--border-color);
+    border-radius:var(--radius-md);
+    overflow:hidden;
+  }
+  .module-row{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:16px 18px;
+    background:var(--bg-surface);
+    border-bottom:1px solid var(--border-color);
+    cursor:pointer;
+    transition:padding-left 0.2s var(--ease), background 0.2s var(--ease);
+  }
+  .module-row:last-child{border-bottom:none;}
+  .module-row:hover{padding-left:22px;background:rgba(91,192,190,0.05);}
+  .module-row .accent-tick{
+    width:3px;height:30px;border-radius:2px;
+    background:var(--tick-color, var(--accent-primary));
+    flex:0 0 auto;
+  }
+  .module-row .icon-wrap{
+    width:34px;height:34px;flex:0 0 auto;
+    border:1px solid var(--border-color);
+    border-radius:var(--radius-sm);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .module-row .icon-wrap svg{width:17px;height:17px;stroke:var(--text-muted);}
+  .module-row .row-main{flex:1 1 auto;min-width:0;}
+  .module-row .row-main h3{font-size:14px;font-weight:600;margin-bottom:6px;}
+  .module-row .row-main .progress-bar-track{margin-top:0;max-width:220px;}
+  .module-row .row-pct{
+    font-size:13px;
+    font-variant-numeric:tabular-nums;
+    color:var(--text-muted);
+    flex:0 0 auto;
+    min-width:38px;
+    text-align:right;
+  }
+
+  .btn{
+    background:var(--accent-primary);
+    color:#062825;
+    border:1px solid var(--accent-primary);
+    padding:10px 18px;
+    border-radius:var(--radius-sm);
+    font-weight:600;
+    font-size:13.5px;
+    letter-spacing:0.01em;
+    transition:filter 0.2s var(--ease), transform 0.15s var(--ease);
+  }
+  .btn:hover{filter:brightness(1.1);}
+  .btn:active{transform:translateY(1px);}
+  .btn.secondary{
+    background:transparent;
+    color:var(--text-main);
+    border:1px solid var(--border-color);
+  }
+  .btn.secondary:hover{border-color:var(--accent-primary);color:var(--accent-primary);filter:none;}
+  .btn:disabled{opacity:0.5;cursor:not-allowed;}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;}
+
+  .tabs{display:flex;gap:22px;margin-bottom:24px;flex-wrap:wrap;border-bottom:1px solid var(--border-color);}
+  .tab-btn{
+    background:transparent;
+    border:none;
+    border-bottom:2px solid transparent;
+    color:var(--text-muted);
+    padding:0 0 11px 0;
+    font-size:13.5px;
+    border-radius:0;
+    margin-bottom:-1px;
+    transition:color 0.2s var(--ease), border-color 0.2s var(--ease);
+  }
+  .tab-btn:hover{color:var(--text-main);}
+  .tab-btn.active{color:var(--accent-primary);border-bottom-color:var(--accent-primary);font-weight:600;}
+
+  .quiz-question{font-size:16px;line-height:1.55;margin-bottom:20px;}
+  .options{display:flex;flex-direction:column;gap:9px;}
+  .option-btn{
+    text-align:left;
+    background:var(--bg-main);
+    border:1px solid var(--border-color);
+    color:var(--text-main);
+    padding:11px 14px;
+    border-radius:var(--radius-sm);
+    font-size:13.5px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    transition:border-color 0.2s var(--ease), background 0.2s var(--ease);
+  }
+  .option-btn .opt-letter{
+    color:var(--accent-primary);
+    font-weight:600;
+    font-size:11.5px;
+    width:20px;height:20px;flex:0 0 auto;
+    border:1px solid var(--border-color);
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .option-btn:hover:not(:disabled){border-color:var(--accent-primary);}
+  .option-btn:hover:not(:disabled) .opt-letter{border-color:var(--accent-primary);}
+  .option-btn.correct{border-color:var(--correct);background:rgba(46,125,50,0.14);}
+  .option-btn.correct .opt-letter{border-color:var(--correct);color:var(--correct);}
+  .option-btn.incorrect{border-color:var(--incorrect);background:rgba(198,40,40,0.14);}
+  .option-btn.incorrect .opt-letter{border-color:var(--incorrect);color:var(--incorrect);}
+  .option-btn:disabled{cursor:default;}
+
+  .quiz-meta{display:flex;justify-content:space-between;color:var(--text-muted);font-size:11.5px;margin-bottom:14px;letter-spacing:0.02em;}
+  .feedback-line{margin-top:16px;font-size:13px;color:var(--text-muted);min-height:18px;}
+
+  textarea, input[type=text]{
+    width:100%;
+    background:var(--bg-main);
+    border:1px solid var(--border-color);
+    color:var(--text-main);
+    padding:10px 12px;
+    border-radius:var(--radius-sm);
+    font-family:inherit;
+    font-size:14px;
+    transition:border-color 0.2s var(--ease);
+  }
+  textarea:focus, input[type=text]:focus{border-color:var(--accent-primary);}
+  select{
+    background:var(--bg-main);
+    border:1px solid var(--border-color);
+    color:var(--text-main);
+    padding:9px 10px;
+    border-radius:var(--radius-sm);
+    font-family:inherit;
+    font-size:13.5px;
+  }
+  label{font-size:11.5px;color:var(--text-muted);display:block;margin-bottom:7px;}
+
+  .mono{font-family:var(--font-mono);}
+
+  table.compare{width:100%;border-collapse:collapse;margin-top:16px;font-size:13.5px;}
+  table.compare th, table.compare td{padding:10px 10px;border-bottom:1px solid var(--border-color);text-align:left;}
+  table.compare th{color:var(--text-muted);font-weight:500;font-size:11.5px;}
+  table.compare tr:last-child td{border-bottom:none;}
+
+  .verse-box{
+    position:relative;
+    font-size:18px;
+    line-height:1.65;
+    padding:26px 28px;
+    background:var(--bg-main);
+    border:1px solid var(--border-color);
+    border-left:2px solid var(--accent-primary);
+    border-radius:var(--radius-md);
+  }
+  .verse-ref{color:var(--accent-primary);font-size:12.5px;margin-top:14px;display:block;letter-spacing:0.02em;}
+
+  .dossier-item{border-top:1px solid var(--border-color);padding:16px 0;}
+  .dossier-item:first-child{border-top:none;padding-top:2px;}
+  .dossier-item h4{font-size:14px;margin-bottom:7px;color:var(--accent-secondary);font-weight:600;}
+  .dossier-item p{font-size:13px;color:var(--text-muted);line-height:1.6;}
+
+  .fact-card-text{
+    font-size:17px;
+    line-height:1.65;
+    padding:22px 4px 6px 4px;
+    min-height:80px;
+  }
+  .facts-list li{
+    counter-increment:factnum;
+    position:relative;
+    padding:12px 0 12px 36px;
+    font-size:13.5px;
+    line-height:1.55;
+    border-top:1px solid var(--border-color);
+  }
+  .facts-list li:first-child{border-top:none;}
+  .facts-list li::before{
+    content:counter(factnum);
+    position:absolute;
+    left:0;top:11px;
+    width:22px;height:22px;
+    border:1px solid var(--border-color);
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;
+    color:var(--accent-primary);
+    font-variant-numeric:tabular-nums;
+  }
+
+  /* Drive mode */
+  .drive-view{
+    position:fixed;
+    inset:0;
+    background:var(--bg-main);
+    z-index:100;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    text-align:center;
+  }
+  .drive-status{font-size:13px;color:var(--text-muted);margin-bottom:20px;letter-spacing:0.03em;}
+  .drive-question{font-size:23px;line-height:1.5;max-width:600px;margin-bottom:28px;font-weight:500;}
+  .drive-mic{
+    width:110px;height:110px;
+    border-radius:50%;
+    background:var(--bg-surface);
+    border:2px solid var(--border-color);
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:28px;
+    transition:border-color 0.3s ease;
+  }
+  .drive-mic.listening{
+    border-color:var(--accent-primary);
+    animation:mic-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes mic-pulse{
+    0%{box-shadow:0 0 0 0 rgba(91,192,190,0.35);}
+    70%{box-shadow:0 0 0 18px rgba(91,192,190,0);}
+    100%{box-shadow:0 0 0 0 rgba(91,192,190,0);}
+  }
+  .drive-mic svg{width:42px;height:42px;stroke:var(--accent-primary);}
+  .drive-options-list{font-size:14.5px;color:var(--text-muted);margin-bottom:28px;line-height:1.85;max-width:520px;}
+  .drive-close{
+    position:absolute;
+    top:22px;right:22px;
+  }
+  .drive-big-btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
+  .drive-big-btn{
+    min-width:88px;
+    padding:20px 26px;
+    font-size:19px;
+    font-weight:700;
+    background:var(--bg-surface);
+    border:1px solid var(--border-color);
+    color:var(--text-main);
+    border-radius:var(--radius-md);
+    transition:border-color 0.2s var(--ease);
+  }
+  .drive-big-btn:hover{border-color:var(--accent-primary);color:var(--accent-primary);}
+  .drive-big-btn:active{border-color:var(--accent-primary);}
+
+  /* Settings drawer */
+  .drawer-backdrop{
+    position:fixed;inset:0;background:rgba(4,8,20,0.6);
+    z-index:90;display:none;
+  }
+  .drawer-backdrop.open{display:block;}
+  .drawer{
+    position:fixed;top:0;right:0;bottom:0;
+    width:min(340px,88vw);
+    background:var(--bg-surface);
+    border-left:1px solid var(--border-color);
+    z-index:91;
+    transform:translateX(100%);
+    transition:transform 0.25s var(--ease);
+    padding:22px;
+    overflow-y:auto;
+  }
+  .drawer.open{transform:translateX(0);}
+  .drawer h2{font-size:15.5px;margin-bottom:20px;font-weight:600;}
+  .drawer .field{margin-bottom:20px;}
+  .drawer .close-x{float:right;}
+
+  .hidden{display:none !important;}
+
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--border-color);border-radius:4px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;animation:none !important;}
+  }
+</style>
+
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><circle class="inner" cx="12" cy="12" r="4.5"></circle></svg>
+      <span class="brand-name">Navy <span class="muted-part">Focus</span></span>
+    </div>
+    <div class="topbar-right">
+      <div class="status-pill offline" id="netStatus"><span class="led"></span><span class="label"></span></div>
+      <div class="timer-widget" id="timerWidget" title="Fokus-Timer">
+        <svg class="timer-ring" id="timerRing" viewBox="0 0 36 36">
+          <circle class="track" cx="18" cy="18" r="15.5"></circle>
+          <circle class="progress" id="timerProgress" cx="18" cy="18" r="15.5" stroke-dasharray="97.4" stroke-dashoffset="0"></circle>
+        </svg>
+        <span class="timer-label" id="timerLabel">25:00</span>
+      </div>
+      <button class="icon-btn" id="settingsBtn" title="Einstellungen" aria-label="Einstellungen">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.6 1H21a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.5 1z"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="body-row">
+    <nav class="sidenav" id="sidenav"></nav>
+    <main class="content">
+      <div class="container" id="contentRoot"></div>
+    </main>
+  </div>
+
+  <nav class="bottomnav"><div class="row" id="bottomnavRow"></div></nav>
+</div>
+
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<aside class="drawer" id="settingsDrawer">
+  <button class="icon-btn close-x" id="drawerClose" aria-label="Schließen">✕</button>
+  <h2>Einstellungen &amp; Sync</h2>
+  <div class="field">
+    <label>Daten exportieren</label>
+    <button class="btn secondary" id="exportBtn" style="width:100%;">Als JSON herunterladen</button>
+  </div>
+  <div class="field">
+    <label>Daten importieren</label>
+    <input type="file" id="importFile" accept="application/json" style="width:100%;font-size:12px;">
+  </div>
+  <div class="field">
+    <label>Fortschritt zurücksetzen</label>
+    <button class="btn secondary" id="resetBtn" style="width:100%;border-color:var(--incorrect);color:var(--incorrect);">Alle Daten löschen</button>
+  </div>
+  <div class="field">
+    <label>Über</label>
+    <p style="font-size:12px;color:var(--text-muted);line-height:1.5;">Navy Focus speichert alle Daten lokal im Browser (localStorage). Kein Server, keine Tracker. Funktioniert offline nach dem ersten Laden.</p>
+  </div>
+</aside>
+
+<div class="drive-view hidden" id="driveView">
+  <button class="icon-btn drive-close" id="driveClose" aria-label="Fahrtmodus verlassen">✕</button>
+  <div class="drive-status" id="driveStatus">Bereit</div>
+  <div class="drive-question" id="driveQuestion">Tippe auf Start, um zu beginnen.</div>
+  <div class="drive-mic" id="driveMic">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+  </div>
+  <div class="drive-options-list" id="driveOptionsList"></div>
+  <div class="drive-big-btns" id="driveBigBtns">
+    <button class="drive-big-btn" id="driveStartBtn">Start</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   DATA
+   ========================================================= */
+var DATA = {
+  geo: [
+    {id:"g1", q:"Welche Meerenge verbindet den Persischen Golf mit dem Golf von Oman und ist eines der wichtigsten Nadelöhre des globalen Öltransports?", opts:["Straße von Malakka","Straße von Hormus","Bab al-Mandab","Dardanellen"], correct:1},
+    {id:"g2", q:"Welches Land hat die weltweit längste Außengrenze zu anderen Staaten?", opts:["Kanada","China","Russland","USA"], correct:1},
+    {id:"g3", q:"Was ist die Hauptstadt von Kasachstan?", opts:["Almaty","Astana","Taschkent","Bischkek"], correct:1},
+    {id:"g4", q:"Welche Meerenge trennt Europa und Asien am Übergang zwischen Marmarameer und Ägäis?", opts:["Bosporus","Dardanellen","Gibraltar","Kertschstraße"], correct:1},
+    {id:"g5", q:"Welches Bündnis wurde 1949 als militärisches Verteidigungsbündnis westlicher Staaten gegründet?", opts:["Warschauer Pakt","NATO","EU","OSZE"], correct:1},
+    {id:"g6", q:"Durch welchen Kanal verläuft die kürzeste Schiffsroute zwischen Mittelmeer und Rotem Meer?", opts:["Panamakanal","Suezkanal","Kielkanal","Korinthkanal"], correct:1},
+    {id:"g7", q:"Welches Land ist flächenmäßig das größte Binnenland der Erde (ohne Meerzugang)?", opts:["Mongolei","Kasachstan","Bolivien","Tschad"], correct:1},
+    {id:"g8", q:"Welche Organisation koordiniert seit 1945 zwischenstaatliche Zusammenarbeit weltweit mit Sitz in New York?", opts:["Weltbank","Vereinte Nationen","G7","IWF"], correct:1}
+  ],
+  tech: [
+    {id:"t1", q:"Welcher Linux-Befehl ändert die Besitzrechte einer Datei inklusive aller Unterverzeichnisse rekursiv?", opts:["chmod -R","chown -R","chgrp -a","usermod -g"], correct:1, cmd:"chown -R"},
+    {id:"t2", q:"Wie lautet die Subnetzmaske für eine CIDR-Notation von /28?", opts:["255.255.255.192","255.255.255.224","255.255.255.240","255.255.255.248"], correct:2},
+    {id:"t3", q:"Welches PowerShell-Cmdlet wird verwendet, um ein neues Benutzerkonto in Active Directory zu erstellen?", opts:["Add-ADUser","New-ADUser","Create-User","Set-ADUser"], correct:1, cmd:"New-ADUser"},
+    {id:"t4", q:"Welcher Standardport wird für unverschlüsseltes HTTP verwendet?", opts:["21","443","80","3306"], correct:2},
+    {id:"t5", q:"Welcher Linux-Befehl zeigt laufende Prozesse in Echtzeit an?", opts:["top","ls -l","df -h","cat /proc"], correct:0, cmd:"top"},
+    {id:"t6", q:"Welcher Port wird standardmäßig für SSH verwendet?", opts:["22","23","25","3389"], correct:0},
+    {id:"t7", q:"Wie viele nutzbare Host-Adressen bietet ein /30-Subnetz?", opts:["2","4","6","14"], correct:0},
+    {id:"t8", q:"Welcher Befehl zeigt die Netzwerkschnittstellen unter Linux an?", opts:["ipconfig","ip a","netusers","ping -a"], correct:1, cmd:"ip a"}
+  ],
+  faith: [
+    {id:"f1", q:"Welches Buch steht im Alten Testament unmittelbar vor dem Buch der Psalmen?", opts:["Hiob","Sprüche","Prediger","Jesaja"], correct:0},
+    {id:"f2", q:"In welcher Sprache wurde das Neue Testament ursprünglich hauptsächlich verfasst?", opts:["Hebräisch","Aramäisch","Altgriechisch / Koiné","Latein"], correct:2},
+    {id:"f3", q:"Wie viele Bücher umfasst das Neue Testament?", opts:["24","27","39","66"], correct:1},
+    {id:"f4", q:"Welcher biblische König gilt als Erbauer des ersten Tempels in Jerusalem?", opts:["David","Salomo","Saul","Hiskia"], correct:1},
+    {id:"f5", q:"Welches der vier Evangelien wird traditionell als erstes verfasst angesehen?", opts:["Markus","Matthäus","Lukas","Johannes"], correct:0}
+  ],
+  verses: [
+    {text:"Denn Gott hat uns nicht einen Geist der Furcht gegeben, sondern der Kraft und der Liebe und der Besonnenheit.", ref:"2. Timotheus 1,7"},
+    {text:"Alle eure Sorge werft auf ihn; denn er sorgt für euch.", ref:"1. Petrus 5,7"},
+    {text:"Ich vermag alles durch den, der mich mächtig macht.", ref:"Philipper 4,13"},
+    {text:"Der HERR ist mein Hirte, mir wird nichts mangeln.", ref:"Psalm 23,1"},
+    {text:"Vertraue auf den HERRN von ganzem Herzen und verlass dich nicht auf deinen Verstand.", ref:"Sprüche 3,5"}
+  ],
+  mobility: [
+    {id:"m1", q:"Was ist die maximale Flughöhe für unbemannte Luftfahrzeugsysteme (C0/A1) über Grund nach EU-Drohnenverordnung?", opts:["50 Meter","100 Meter","120 Meter","150 Meter"], correct:2},
+    {id:"m2", q:"Welche maximale Nennleistung darf ein Leichtkraftrad der Klasse A1 laut Gesetzgeber aufweisen?", opts:["11 kW","15 kW","35 kW","8 kW"], correct:0},
+    {id:"m3", q:"In welcher offenen Kategorie ist für Drohnen unter 250g grundsätzlich kein Kompetenznachweis nötig?", opts:["A1 (C0)","A2","A3","Spezialkategorie"], correct:0},
+    {id:"m4", q:"Welches Bauteil eines Verbrennungsmotors sorgt für die Zündung des Kraftstoffgemischs bei Ottomotoren?", opts:["Einspritzdüse","Zündkerze","Nockenwelle","Lichtmaschine"], correct:1},
+    {id:"m5", q:"Wie hoch ist die zulässige Höchstgeschwindigkeit eines Leichtkraftrads der Klasse A1 üblicherweise begrenzt?", opts:["45 km/h","80 km/h","100 km/h","keine Begrenzung"], correct:2}
+  ]
+};
+
+/* Lernpakete: je 10 Fakten pro Modul, danach 2 Kontrollfragen dazu.
+   Erst lesen/anhören, danach erst prüfen -- statt direkt zu raten. */
+var FACTS = {
+  geo: [
+    "Die Straße von Hormus verbindet den Persischen Golf mit dem Golf von Oman und ist eines der wichtigsten Nadelöhre des weltweiten Öltransports.",
+    "Russland hat mit rund 20.000 Kilometern Landgrenze die längste Außengrenze aller Staaten der Welt.",
+    "Astana ist seit 1997 die Hauptstadt Kasachstans, zuvor war es Almaty.",
+    "Der Bosporus und die Dardanellen trennen zusammen Europa und Asien und verbinden Schwarzes Meer und Mittelmeer.",
+    "Die NATO wurde 1949 als Verteidigungsbündnis westlicher Staaten gegründet, Kernstück ist der Beistandsartikel 5.",
+    "Der Suezkanal verkürzt die Schiffsroute zwischen Europa und Asien erheblich, da Schiffe nicht um Afrika herumfahren müssen.",
+    "Die Mongolei ist nach Kasachstan das zweitgrößte Binnenland der Erde ohne eigenen Meerzugang.",
+    "Die Vereinten Nationen wurden 1945 gegründet und haben ihren Hauptsitz in New York.",
+    "Bab al-Mandab verbindet das Rote Meer mit dem Golf von Aden und liegt zwischen Jemen, Dschibuti und Eritrea.",
+    "Die Straße von Malakka ist der wichtigste Seeweg zwischen Indischem Ozean und Südchinesischem Meer für den Handel mit Ostasien."
+  ],
+  tech: [
+    "Der Befehl chown -R ändert Besitzrechte einer Datei inklusive aller Unterverzeichnisse rekursiv.",
+    "Eine CIDR-Notation von /28 entspricht der Subnetzmaske 255.255.255.240 mit 16 Adressen im Subnetz.",
+    "Mit New-ADUser wird in PowerShell ein neues Benutzerkonto in Active Directory angelegt.",
+    "Port 80 ist der Standardport für unverschlüsseltes HTTP, Port 443 für verschlüsseltes HTTPS.",
+    "Der Linux-Befehl top zeigt laufende Prozesse in Echtzeit inklusive CPU- und Speicherauslastung an.",
+    "SSH nutzt standardmäßig Port 22 für verschlüsselte Fernzugriffe auf Server.",
+    "Ein /30-Subnetz bietet vier IP-Adressen, davon zwei nutzbare Host-Adressen.",
+    "Mit ip a lassen sich unter Linux alle Netzwerkschnittstellen und ihre IP-Adressen anzeigen.",
+    "chmod ändert Dateiberechtigungen wie Lese-, Schreib- und Ausführungsrechte, nicht aber den Besitzer einer Datei.",
+    "DNS (Domain Name System) übersetzt Domainnamen wie beispiel.de in IP-Adressen."
+  ],
+  faith: [
+    "Das Buch Hiob steht im Alten Testament unmittelbar vor den Psalmen.",
+    "Das Neue Testament wurde ursprünglich hauptsächlich in Altgriechisch (Koiné) verfasst.",
+    "Das Neue Testament umfasst 27 Bücher.",
+    "König Salomo gilt als Erbauer des ersten Tempels in Jerusalem.",
+    "Das Markusevangelium gilt vielen Forschern als das älteste der vier Evangelien.",
+    "Die Bibel besteht insgesamt aus 66 Büchern: 39 im Alten und 27 im Neuen Testament.",
+    "Der Pentateuch, die ersten fünf Bücher der Bibel, wird auch Tora genannt.",
+    "Die Psalmen sind eine Sammlung von 150 Liedern und Gebeten.",
+    "Das Alte Testament wurde größtenteils auf Hebräisch verfasst, einige Teile auf Aramäisch.",
+    "Der Apostel Paulus gilt als Verfasser mehrerer Briefe im Neuen Testament, etwa an die Römer und Korinther."
+  ],
+  mobility: [
+    "Drohnen der Klasse C0/A1 dürfen laut EU-Verordnung maximal 120 Meter über Grund fliegen.",
+    "Ein Leichtkraftrad der Klasse A1 darf laut Gesetzgeber maximal 11 kW Nennleistung haben.",
+    "Für Drohnen unter 250 Gramm ist in der offenen Kategorie A1 (C0) grundsätzlich kein Kompetenznachweis nötig.",
+    "Die Zündkerze sorgt beim Ottomotor für die Zündung des verdichteten Kraftstoff-Luft-Gemischs.",
+    "Leichtkrafträder der Klasse A1 sind üblicherweise auf eine Höchstgeschwindigkeit von 100 km/h begrenzt.",
+    "Für den Betrieb von Drohnen in der offenen Kategorie ist in der Regel eine Registrierung des Betreibers erforderlich.",
+    "Die Kategorie A3 der EU-Drohnenverordnung erlaubt Flüge nur weit entfernt von Personen und bebauten Gebieten.",
+    "Ein EU-Kompetenznachweis für Drohnenpiloten wird umgangssprachlich oft als 'kleiner Drohnenführerschein' bezeichnet.",
+    "Bei Leichtkrafträdern der Klasse A1 ist ein Verhältnis von Leistung zu Gewicht von maximal 0,1 kW/kg vorgeschrieben.",
+    "Die Fahrerlaubnisklasse A1 berechtigt in Deutschland üblicherweise ab 16 Jahren zum Führen von Leichtkrafträdern."
+  ]
+};
+
+var CONCEPT_QUIZ = {
+  geo: [
+    {id:"cg1", q:"Welche Meerenge liegt zwischen Jemen, Dschibuti und Eritrea?", opts:["Bab al-Mandab","Straße von Hormus","Bosporus","Straße von Gibraltar"], correct:0},
+    {id:"cg2", q:"In welchem Jahr wurde die NATO gegründet?", opts:["1945","1949","1955","1991"], correct:1}
+  ],
+  tech: [
+    {id:"ct1", q:"Wie viele Host-Adressen sind in einem /30-Subnetz nutzbar?", opts:["2","4","6","14"], correct:0},
+    {id:"ct2", q:"Welcher Port wird standardmäßig für SSH verwendet?", opts:["21","22","80","443"], correct:1}
+  ],
+  faith: [
+    {id:"cf1", q:"Wie viele Bücher umfasst die Bibel insgesamt?", opts:["39","27","66","100"], correct:2},
+    {id:"cf2", q:"Wer gilt als Erbauer des ersten Tempels in Jerusalem?", opts:["David","Salomo","Saul","Hiskia"], correct:1}
+  ],
+  mobility: [
+    {id:"cm1", q:"Bis zu welchem Gewicht ist in der Kategorie A1 (C0) grundsätzlich kein Kompetenznachweis für Drohnen nötig?", opts:["unter 120 g","unter 250 g","unter 500 g","unter 900 g"], correct:1},
+    {id:"cm2", q:"Wie hoch ist die maximale Nennleistung eines Leichtkraftrads der Klasse A1?", opts:["8 kW","11 kW","15 kW","35 kW"], correct:1}
+  ]
+};
+
+var CATEGORIES = [
+  {key:"dashboard", label:"Dashboard", icon:"grid"},
+  {key:"geo", label:"Geopolitik", icon:"globe"},
+  {key:"tech", label:"Tech/Netzwerk", icon:"terminal"},
+  {key:"faith", label:"Glaube", icon:"book"},
+  {key:"mobility", label:"Mobilität", icon:"bike"},
+  {key:"drive", label:"Audio-Fahrtmodus", icon:"mic"}
+];
+
+var ICONS = {
+  grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect>',
+  globe:'<circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3a13 13 0 0 1 0 18M12 3a13 13 0 0 0 0 18"></path>',
+  terminal:'<polyline points="4 6 9 12 4 18"></polyline><line x1="12" y1="18" x2="20" y2="18"></line>',
+  book:'<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v18H6.5A2.5 2.5 0 0 0 4 22.5v-18z"></path><line x1="4" y1="19.5" x2="20" y2="19.5"></line>',
+  bike:'<circle cx="5.5" cy="17.5" r="3.5"></circle><circle cx="18.5" cy="17.5" r="3.5"></circle><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"></path><path d="M12 17.5V14l-3-3 4-3 2 3h3"></path>',
+  mic:'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line>'
+};
+
+/* =========================================================
+   STATE / STORAGE
+   ========================================================= */
+var STORAGE_KEY = "navyFocusData_v1";
+
+function defaultState(){
+  return {
+    progress:{geo:{}, tech:{}, faith:{}, mobility:{}},
+    notes:{},
+    settings:{}
+  };
+}
+
+var state = loadState();
+
+function loadState(){
+  try{
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return defaultState();
+    var parsed = JSON.parse(raw);
+    var d = defaultState();
+    return {
+      progress:Object.assign(d.progress, parsed.progress||{}),
+      notes:Object.assign(d.notes, parsed.notes||{}),
+      settings:Object.assign(d.settings, parsed.settings||{})
+    };
+  }catch(e){
+    return defaultState();
+  }
+}
+
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }catch(e){ /* storage unavailable, ignore silently */ }
+}
+
+function markAnswered(cat, id, wasCorrect){
+  if(!state.progress[cat]) state.progress[cat] = {};
+  state.progress[cat][id] = !!wasCorrect;
+  saveState();
+  renderNav();
+}
+
+function categoryPct(cat){
+  var qs = DATA[cat] || [];
+  if(qs.length === 0) return 0;
+  var solved = 0;
+  var p = state.progress[cat] || {};
+  qs.forEach(function(q){ if(p[q.id] === true) solved++; });
+  return Math.round((solved/qs.length)*100);
+}
+
+/* =========================================================
+   ROUTER
+   ========================================================= */
+var currentRoute = "dashboard";
+
+function navigate(route){
+  if(window.__factsPlaying){ window.__factsPlaying = false; if(speechSupported) window.speechSynthesis.cancel(); }
+  if(route === "drive"){
+    openDriveMode();
+    return;
+  }
+  currentRoute = route;
+  render();
+  renderNav();
+  document.querySelector("main.content").scrollTop = 0;
+}
+
+/* =========================================================
+   NAV RENDERING
+   ========================================================= */
+function navItemHtml(cat, extraClass){
+  var active = (currentRoute === cat.key) ? " active":"";
+  return '<button class="nav-item'+active+' '+(extraClass||'')+'" data-route="'+cat.key+'">'+
+    '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+ICONS[cat.icon]+'</svg>'+
+    '<span>'+cat.label+'</span></button>';
+}
+
+function renderNav(){
+  var side = document.getElementById("sidenav");
+  var bottom = document.getElementById("bottomnavRow");
+  side.innerHTML = '<div class="nav-heading">Bereiche</div>'+CATEGORIES.map(function(c){ return navItemHtml(c); }).join("");
+  bottom.innerHTML = CATEGORIES.map(function(c){ return navItemHtml(c); }).join("");
+  document.querySelectorAll(".nav-item").forEach(function(btn){
+    btn.addEventListener("click", function(){ navigate(btn.getAttribute("data-route")); });
+  });
+}
+
+/* =========================================================
+   RENDER: MAIN CONTENT
+   ========================================================= */
+function render(){
+  var root = document.getElementById("contentRoot");
+  if(currentRoute === "dashboard") root.innerHTML = renderDashboard();
+  else if(currentRoute === "geo") root.innerHTML = renderGeoModule();
+  else if(currentRoute === "tech") root.innerHTML = renderTechModule();
+  else if(currentRoute === "faith") root.innerHTML = renderFaithModule();
+  else if(currentRoute === "mobility") root.innerHTML = renderMobilityModule();
+  bindContentEvents();
+}
+
+function overallPct(){
+  var cats = ["geo","tech","faith","mobility"];
+  var total = 0, solved = 0;
+  cats.forEach(function(c){
+    var qs = DATA[c] || [];
+    var p = state.progress[c] || {};
+    total += qs.length;
+    qs.forEach(function(q){ if(p[q.id] === true) solved++; });
+  });
+  return total === 0 ? 0 : Math.round((solved/total)*100);
+}
+
+function renderDashboard(){
+  var cats = [
+    {key:"geo", label:"Geopolitik & Weltwissen", icon:"globe"},
+    {key:"tech", label:"Tech, Linux & Networking", icon:"terminal"},
+    {key:"faith", label:"Glaube & Bibel", icon:"book"},
+    {key:"mobility", label:"Mobilität & Drohnenrecht", icon:"bike"}
+  ];
+  var pct = overallPct();
+  var RING_R = 50, RING_C = 2*Math.PI*RING_R;
+  var offset = RING_C*(1-pct/100);
+
+  var rows = cats.map(function(c){
+    var p = categoryPct(c.key);
+    return '<div class="module-row" data-route="'+c.key+'" style="--tick-color:var(--accent-primary)">'+
+      '<div class="accent-tick"></div>'+
+      '<div class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+ICONS[c.icon]+'</svg></div>'+
+      '<div class="row-main"><h3>'+c.label+'</h3><div class="progress-bar-track"><div class="progress-bar-fill" style="width:'+p+'%;"></div></div></div>'+
+      '<div class="row-pct">'+p+'%</div>'+
+    '</div>';
+  }).join("");
+
+  return '<h1 class="page-title">Dashboard</h1>'+
+    '<p class="page-sub">Ruhiger Überblick über deinen Lernfortschritt. Keine Streaks, keine Coins.</p>'+
+    '<div class="hero">'+
+      '<div class="hero-ring-wrap">'+
+        '<svg viewBox="0 0 120 120">'+
+          '<circle class="track" cx="60" cy="60" r="'+RING_R+'"></circle>'+
+          '<circle class="progress" cx="60" cy="60" r="'+RING_R+'" stroke-dasharray="'+RING_C.toFixed(1)+'" stroke-dashoffset="'+offset.toFixed(1)+'"></circle>'+
+        '</svg>'+
+        '<div class="hero-ring-num"><span class="num">'+pct+'%</span><span class="unit">gemeistert</span></div>'+
+      '</div>'+
+      '<div class="hero-text">'+
+        '<h2>Gesamtfortschritt über alle Module</h2>'+
+        '<p>Basierend auf allen beantworteten Fragen in Geopolitik, Tech, Glaube und Mobilität. Öffne ein Modul unten, um weiterzumachen.</p>'+
+      '</div>'+
+    '</div>'+
+    '<div class="module-list">'+rows+'</div>'+
+    '<div class="section-gap card">'+
+      '<div class="card-title"><h3>Audio-Fahrtmodus</h3></div>'+
+      '<p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">Fragen laut vorlesen lassen und per Sprache antworten &mdash; ideal für unterwegs.</p>'+
+      '<button class="btn" id="dashDriveBtn">Fahrtmodus starten</button>'+
+    '</div>';
+}
+
+/* ---------- Generic quiz engine ---------- */
+function quizState(cat){
+  if(!window.__quizRuntime) window.__quizRuntime = {};
+  if(!window.__quizRuntime[cat]) window.__quizRuntime[cat] = {index:0, answered:false};
+  return window.__quizRuntime[cat];
+}
+
+function renderQuizCard(cat){
+  var qs = DATA[cat];
+  var rt = quizState(cat);
+  if(rt.index >= qs.length) rt.index = 0;
+  var q = qs[rt.index];
+  var letters = ["A","B","C","D"];
+  var optsHtml = q.opts.map(function(opt, i){
+    return '<button class="option-btn" data-opt="'+i+'" data-cat="'+cat+'"><span class="opt-letter">'+letters[i]+'</span><span>'+opt+'</span></button>';
+  }).join("");
+  return '<div class="card" id="quizCard-'+cat+'">'+
+    '<div class="quiz-meta"><span>Frage '+(rt.index+1)+' / '+qs.length+'</span><span>'+categoryPct(cat)+'% gemeistert</span></div>'+
+    '<div class="quiz-question">'+q.q+'</div>'+
+    '<div class="options">'+optsHtml+'</div>'+
+    '<div class="feedback-line" id="feedback-'+cat+'"></div>'+
+    '<div class="btn-row"><button class="btn secondary" data-next="'+cat+'">Nächste Frage</button></div>'+
+  '</div>';
+}
+
+function handleOptionClick(cat, idx, btnEl){
+  var rt = quizState(cat);
+  if(rt.answered) return;
+  rt.answered = true;
+  var q = DATA[cat][rt.index];
+  var card = document.getElementById("quizCard-"+cat);
+  var buttons = card.querySelectorAll(".option-btn");
+  buttons.forEach(function(b, i){
+    b.disabled = true;
+    if(i === q.correct) b.classList.add("correct");
+    else if(i === idx && idx !== q.correct) b.classList.add("incorrect");
+  });
+  var correct = (idx === q.correct);
+  markAnswered(cat, q.id, correct);
+  var fb = document.getElementById("feedback-"+cat);
+  fb.textContent = correct ? "Richtig!" : ("Falsch. Richtig war: "+q.opts[q.correct]);
+  var pctSpan = card.querySelector(".quiz-meta span:last-child");
+  if(pctSpan) pctSpan.textContent = categoryPct(cat)+"% gemeistert";
+}
+
+function nextQuestion(cat){
+  var rt = quizState(cat);
+  rt.index = (rt.index + 1) % DATA[cat].length;
+  rt.answered = false;
+  var container = document.getElementById("quizContainer-"+cat);
+  if(container) container.innerHTML = renderQuizCard(cat);
+}
+
+/* ---------- Lernablauf: erst 10 Fakten, dann 2 Kontrollfragen ---------- */
+function learnState(cat){
+  if(!window.__learnState) window.__learnState = {};
+  if(!window.__learnState[cat]) window.__learnState[cat] = {stage:"facts"};
+  return window.__learnState[cat];
+}
+
+function conceptQuizState(cat){
+  if(!window.__conceptRuntime) window.__conceptRuntime = {};
+  if(!window.__conceptRuntime[cat]) window.__conceptRuntime[cat] = {index:0, answered:false};
+  return window.__conceptRuntime[cat];
+}
+
+function renderLearnFlow(cat){
+  var ls = learnState(cat);
+  if(ls.stage === "quiz") return renderConceptQuiz(cat);
+
+  var facts = FACTS[cat];
+  if(ls.factIndex === undefined) ls.factIndex = 0;
+  var idx = ls.factIndex;
+  var isLast = idx === facts.length - 1;
+  var playing = !!window.__factsPlaying && window.__factsPlayingCat === cat;
+
+  return '<div class="card">'+
+    '<div class="quiz-meta"><span>Fakt '+(idx+1)+' / '+facts.length+'</span><span>Lernkarte</span></div>'+
+    '<div class="fact-card-text">'+facts[idx]+'</div>'+
+    '<div class="btn-row">'+
+      '<button class="btn secondary" id="factsReadBtn" data-cat="'+cat+'">'+(playing?"Vorlesen stoppen":"Vorlesen")+'</button>'+
+      (idx > 0 ? '<button class="btn secondary" data-factprev="'+cat+'">Zurück</button>' : '')+
+      '<button class="btn" data-factnext="'+cat+'">'+(isLast ? "Weiter zu den 2 Fragen" : "Weiter")+'</button>'+
+    '</div>'+
+  '</div>';
+}
+
+function stopFactsReading(){
+  if(window.__factsPlaying){
+    window.__factsPlaying = false;
+    if(speechSupported) window.speechSynthesis.cancel();
+  }
+}
+
+function factNext(cat){
+  stopFactsReading();
+  var ls = learnState(cat);
+  var facts = FACTS[cat];
+  if(ls.factIndex >= facts.length - 1) ls.stage = "quiz";
+  else ls.factIndex++;
+  render();
+}
+
+function factPrev(cat){
+  stopFactsReading();
+  var ls = learnState(cat);
+  if(ls.factIndex > 0) ls.factIndex--;
+  render();
+}
+
+function renderConceptQuiz(cat){
+  var qs = CONCEPT_QUIZ[cat];
+  var rt = conceptQuizState(cat);
+  if(rt.index >= qs.length){
+    return '<div class="card">'+
+      '<div class="card-title"><h3>Geschafft</h3></div>'+
+      '<p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Du hast beide Fragen zu diesen Fakten beantwortet.</p>'+
+      '<div class="btn-row"><button class="btn secondary" data-factsrestart="'+cat+'">Fakten noch einmal ansehen</button></div>'+
+    '</div>';
+  }
+  var q = qs[rt.index];
+  var letters = ["A","B","C","D"];
+  var optsHtml = q.opts.map(function(opt, i){
+    return '<button class="option-btn" data-copt="'+i+'" data-ccat="'+cat+'"><span class="opt-letter">'+letters[i]+'</span><span>'+opt+'</span></button>';
+  }).join("");
+  return '<div class="card" id="conceptQuizCard-'+cat+'">'+
+    '<div class="quiz-meta"><span>Kontrollfrage '+(rt.index+1)+' / '+qs.length+'</span><span>zu den 10 Fakten</span></div>'+
+    '<div class="quiz-question">'+q.q+'</div>'+
+    '<div class="options">'+optsHtml+'</div>'+
+    '<div class="feedback-line" id="cfeedback-'+cat+'"></div>'+
+  '</div>';
+}
+
+function handleConceptOption(cat, idx){
+  var rt = conceptQuizState(cat);
+  if(rt.answered) return;
+  rt.answered = true;
+  var q = CONCEPT_QUIZ[cat][rt.index];
+  var card = document.getElementById("conceptQuizCard-"+cat);
+  var buttons = card.querySelectorAll(".option-btn");
+  buttons.forEach(function(b, i){
+    b.disabled = true;
+    if(i === q.correct) b.classList.add("correct");
+    else if(i === idx && idx !== q.correct) b.classList.add("incorrect");
+  });
+  var correct = (idx === q.correct);
+  markAnswered(cat, q.id, correct);
+  var fb = document.getElementById("cfeedback-"+cat);
+  fb.innerHTML = (correct ? "Richtig!" : ("Falsch. Richtig war: "+q.opts[q.correct])) +
+    '<div class="btn-row"><button class="btn secondary" data-cnext="'+cat+'">Weiter</button></div>';
+}
+
+function conceptNext(cat){
+  var rt = conceptQuizState(cat);
+  rt.index++;
+  rt.answered = false;
+  render();
+}
+
+function factsRestart(cat){
+  var ls = learnState(cat);
+  ls.stage = "facts";
+  ls.factIndex = 0;
+  window.__conceptRuntime = window.__conceptRuntime || {};
+  window.__conceptRuntime[cat] = {index:0, answered:false};
+  render();
+}
+
+function toggleFactsReading(cat){
+  if(window.__factsPlaying && window.__factsPlayingCat === cat){
+    stopFactsReading();
+    var btn = document.getElementById("factsReadBtn");
+    if(btn) btn.textContent = "Vorlesen";
+    return;
+  }
+  var ls = learnState(cat);
+  var idx = ls.factIndex || 0;
+  window.__factsPlaying = true;
+  window.__factsPlayingCat = cat;
+  var btn2 = document.getElementById("factsReadBtn");
+  if(btn2) btn2.textContent = "Vorlesen stoppen";
+  speak(FACTS[cat][idx], function(){
+    window.__factsPlaying = false;
+    var btn3 = document.getElementById("factsReadBtn");
+    if(btn3) btn3.textContent = "Vorlesen";
+  });
+}
+
+/* ---------- Geo module ---------- */
+var DOSSIERS = [
+  {title:"Straße von Hormus", text:"Engste Passage zwischen Persischem Golf und Golf von Oman. Rund ein Fünftel des weltweiten Öl- und LNG-Transports passiert diese Meerenge; geopolitisch hochsensibel wegen der Nähe zum Iran."},
+  {title:"Straße von Malakka", text:"Wichtigster Seeweg zwischen Indischem Ozean und Südchinesischem Meer, zentral für den Handel zwischen Europa/Nahost und Ostasien. Anfällig für Piraterie und Engpässe."},
+  {title:"Suezkanal", text:"Künstliche Wasserstraße zwischen Mittelmeer und Rotem Meer; verkürzt die Route zwischen Europa und Asien erheblich und ist ein kritischer Knotenpunkt des Welthandels."},
+  {title:"NATO", text:"Nordatlantisches Verteidigungsbündnis von 1949, das kollektive Verteidigung (Artikel 5) zwischen seinen Mitgliedstaaten in Nordamerika und Europa garantiert."},
+  {title:"Bab al-Mandab", text:"Meerenge zwischen Rotem Meer und Golf von Aden, wichtige Verbindung für Schiffe auf dem Weg zum Suezkanal; strategisch wegen der Lage zwischen Jemen, Dschibuti und Eritrea."}
+];
+
+var COUNTRIES = {
+  "Deutschland": {bip:"ca. 4,3 Bio. USD", bev:"ca. 84 Mio.", reg:"Parlamentarische Republik"},
+  "USA": {bip:"ca. 27 Bio. USD", bev:"ca. 335 Mio.", reg:"Präsidiale Bundesrepublik"},
+  "China": {bip:"ca. 18 Bio. USD", bev:"ca. 1,41 Mrd.", reg:"Sozialistische Volksrepublik"},
+  "Kasachstan": {bip:"ca. 0,26 Bio. USD", bev:"ca. 20 Mio.", reg:"Präsidialrepublik"},
+  "Japan": {bip:"ca. 4,2 Bio. USD", bev:"ca. 124 Mio.", reg:"Parlamentarische Monarchie"},
+  "Brasilien": {bip:"ca. 2,2 Bio. USD", bev:"ca. 216 Mio.", reg:"Präsidiale Bundesrepublik"}
+};
+
+function renderGeoModule(){
+  var tab = window.__geoTab || "learn";
+  var body = "";
+  if(tab === "learn"){
+    body = renderLearnFlow("geo");
+  } else if(tab === "quiz"){
+    body = '<div id="quizContainer-geo">'+renderQuizCard("geo")+'</div>';
+  } else if(tab === "dossiers"){
+    body = '<div class="card">'+DOSSIERS.map(function(d){
+      return '<div class="dossier-item"><h4>'+d.title+'</h4><p>'+d.text+'</p></div>';
+    }).join("")+'</div>';
+  } else if(tab === "compare"){
+    var names = Object.keys(COUNTRIES);
+    var options = names.map(function(n){return '<option value="'+n+'">'+n+'</option>';}).join("");
+    var a = window.__cmpA || names[0];
+    var b = window.__cmpB || names[1];
+    body = '<div class="card">'+
+      '<div class="grid" style="grid-template-columns:1fr 1fr;">'+
+        '<div><label>Land A</label><select id="cmpA">'+options+'</select></div>'+
+        '<div><label>Land B</label><select id="cmpB">'+options+'</select></div>'+
+      '</div>'+
+      renderCompareTable(a,b)+
+    '</div>';
+  }
+  return '<h1 class="page-title">Geopolitik & Weltwissen</h1>'+
+    '<p class="page-sub">Erst 10 Fakten lesen oder anhören, dann 2 Kontrollfragen dazu. Dossiers und Länder-Vergleich zum Vertiefen.</p>'+
+    '<div class="tabs">'+
+      tabBtn("geo","learn","Lernen")+tabBtn("geo","quiz","Übungsquiz")+tabBtn("geo","dossiers","Dossiers")+tabBtn("geo","compare","Länder-Vergleich")+
+    '</div>'+body;
+}
+
+function renderCompareTable(a,b){
+  var ca = COUNTRIES[a], cb = COUNTRIES[b];
+  return '<table class="compare"><tr><th></th><th>'+a+'</th><th>'+b+'</th></tr>'+
+    '<tr><td>BIP (nominal)</td><td>'+ca.bip+'</td><td>'+cb.bip+'</td></tr>'+
+    '<tr><td>Bevölkerung</td><td>'+ca.bev+'</td><td>'+cb.bev+'</td></tr>'+
+    '<tr><td>Regierungsform</td><td>'+ca.reg+'</td><td>'+cb.reg+'</td></tr>'+
+  '</table>';
+}
+
+function tabBtn(module, key, label){
+  var varName = "__"+module+"Tab";
+  var active = (window[varName] || "learn") === key ? " active" : "";
+  return '<button class="tab-btn'+active+'" data-tabmod="'+module+'" data-tabkey="'+key+'">'+label+'</button>';
+}
+
+/* ---------- Tech module ---------- */
+function renderTechModule(){
+  var tab = window.__techTab || "learn";
+  var body = "";
+  if(tab === "learn"){
+    body = renderLearnFlow("tech");
+  } else if(tab === "quiz"){
+    body = '<div id="quizContainer-tech">'+renderQuizCard("tech")+'</div>';
+  } else if(tab === "terminal"){
+    var cmdQs = DATA.tech.filter(function(q){ return q.cmd; });
+    var rt = window.__termIndex || 0;
+    if(rt >= cmdQs.length) rt = 0;
+    var q = cmdQs[rt];
+    body = '<div class="card">'+
+      '<div class="quiz-question mono" style="font-size:14px;">'+q.q+'</div>'+
+      '<label>Tippe den Befehl:</label>'+
+      '<input type="text" id="termInput" class="mono" placeholder="z.B. ls -la" autocomplete="off">'+
+      '<div class="feedback-line" id="termFeedback"></div>'+
+      '<div class="btn-row"><button class="btn" id="termCheck">Prüfen</button><button class="btn secondary" id="termNext">Nächster Befehl</button></div>'+
+    '</div>';
+  }
+  return '<h1 class="page-title">Tech, Linux & Networking</h1>'+
+    '<p class="page-sub">Erst 10 Fakten lesen oder anhören, dann 2 Kontrollfragen dazu. Terminal-Quickfire zum Vertiefen.</p>'+
+    '<div class="tabs">'+tabBtn("tech","learn","Lernen")+tabBtn("tech","quiz","Übungsquiz")+tabBtn("tech","terminal","Terminal Quickfire")+'</div>'+
+    body;
+}
+
+/* ---------- Faith module ---------- */
+function renderFaithModule(){
+  var tab = window.__faithTab || "learn";
+  var body = "";
+  if(tab === "learn"){
+    body = renderLearnFlow("faith");
+  } else if(tab === "verse"){
+    var vi = window.__verseIndex;
+    if(vi === undefined){ vi = Math.floor(Math.random()*DATA.verses.length); window.__verseIndex = vi; }
+    var v = DATA.verses[vi];
+    var note = state.notes["verse_"+vi] || "";
+    body = '<div class="card">'+
+      '<div class="verse-box">&bdquo;'+v.text+'&ldquo;<span class="verse-ref">'+v.ref+'</span></div>'+
+      '<div class="section-gap"><label>Deine Notiz</label><textarea id="verseNote" rows="3" placeholder="Gedanke zum Vers...">'+note+'</textarea></div>'+
+      '<div class="btn-row"><button class="btn secondary" id="verseNextBtn">Neuer Vers</button><button class="btn" id="verseSaveBtn">Notiz speichern</button></div>'+
+    '</div>';
+  } else if(tab === "quiz"){
+    body = '<div id="quizContainer-faith">'+renderQuizCard("faith")+'</div>';
+  }
+  return '<h1 class="page-title">Glaube & Bibel</h1>'+
+    '<p class="page-sub">Erst 10 Fakten lesen oder anhören, dann 2 Kontrollfragen dazu. Tagesvers und Chronologie-Quiz zum Vertiefen.</p>'+
+    '<div class="tabs">'+tabBtn("faith","learn","Lernen")+tabBtn("faith","verse","Tagesvers")+tabBtn("faith","quiz","Chronologie-Quiz")+'</div>'+
+    body;
+}
+
+/* ---------- Mobility module ---------- */
+function renderMobilityModule(){
+  var tab = window.__mobilityTab || "learn";
+  var body = "";
+  if(tab === "learn"){
+    body = renderLearnFlow("mobility");
+  } else if(tab === "quiz"){
+    body = '<div id="quizContainer-mobility">'+renderQuizCard("mobility")+'</div>';
+  }
+  return '<h1 class="page-title">Mobilität & Drohnenrecht</h1>'+
+    '<p class="page-sub">Erst 10 Fakten lesen oder anhören, dann 2 Kontrollfragen dazu. Übungsquiz zum Vertiefen.</p>'+
+    '<div class="tabs">'+tabBtn("mobility","learn","Lernen")+tabBtn("mobility","quiz","Übungsquiz")+'</div>'+
+    body;
+}
+
+/* ---------- Event binding for content area ---------- */
+function bindContentEvents(){
+  document.querySelectorAll(".module-row[data-route]").forEach(function(el){
+    el.addEventListener("click", function(){ navigate(el.getAttribute("data-route")); });
+  });
+  var dashDrive = document.getElementById("dashDriveBtn");
+  if(dashDrive) dashDrive.addEventListener("click", openDriveMode);
+
+  document.querySelectorAll(".option-btn[data-opt]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      handleOptionClick(btn.getAttribute("data-cat"), parseInt(btn.getAttribute("data-opt"),10), btn);
+    });
+  });
+  document.querySelectorAll("[data-next]").forEach(function(btn){
+    btn.addEventListener("click", function(){ nextQuestion(btn.getAttribute("data-next")); });
+  });
+
+  var factsReadBtn = document.getElementById("factsReadBtn");
+  if(factsReadBtn){
+    factsReadBtn.addEventListener("click", function(){ toggleFactsReading(factsReadBtn.getAttribute("data-cat")); });
+  }
+  document.querySelectorAll("[data-factnext]").forEach(function(btn){
+    btn.addEventListener("click", function(){ factNext(btn.getAttribute("data-factnext")); });
+  });
+  document.querySelectorAll("[data-factprev]").forEach(function(btn){
+    btn.addEventListener("click", function(){ factPrev(btn.getAttribute("data-factprev")); });
+  });
+  document.querySelectorAll(".option-btn[data-copt]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      handleConceptOption(btn.getAttribute("data-ccat"), parseInt(btn.getAttribute("data-copt"),10));
+    });
+  });
+  document.querySelectorAll("[data-cnext]").forEach(function(btn){
+    btn.addEventListener("click", function(){ conceptNext(btn.getAttribute("data-cnext")); });
+  });
+  document.querySelectorAll("[data-factsrestart]").forEach(function(btn){
+    btn.addEventListener("click", function(){ factsRestart(btn.getAttribute("data-factsrestart")); });
+  });
+
+  document.querySelectorAll(".tab-btn[data-tabmod]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      if(window.__factsPlaying){ window.__factsPlaying = false; if(speechSupported) window.speechSynthesis.cancel(); }
+      window["__"+btn.getAttribute("data-tabmod")+"Tab"] = btn.getAttribute("data-tabkey");
+      render();
+    });
+  });
+
+  var cmpA = document.getElementById("cmpA");
+  var cmpB = document.getElementById("cmpB");
+  if(cmpA && cmpB){
+    if(window.__cmpB) cmpB.value = window.__cmpB;
+    if(window.__cmpA) cmpA.value = window.__cmpA;
+    else cmpB.selectedIndex = 1;
+    cmpA.addEventListener("change", function(){ window.__cmpA = cmpA.value; render(); });
+    cmpB.addEventListener("change", function(){ window.__cmpB = cmpB.value; render(); });
+  }
+
+  var termCheck = document.getElementById("termCheck");
+  if(termCheck){
+    var cmdQs = DATA.tech.filter(function(q){ return q.cmd; });
+    termCheck.addEventListener("click", function(){
+      var idx = window.__termIndex || 0;
+      if(idx >= cmdQs.length) idx = 0;
+      var q = cmdQs[idx];
+      var val = document.getElementById("termInput").value.trim();
+      var ok = val.toLowerCase() === q.cmd.toLowerCase();
+      document.getElementById("termFeedback").textContent = ok ? "Richtig! "+q.cmd : "Nicht ganz. Richtig wäre: "+q.cmd;
+      markAnswered("tech", q.id, ok);
+    });
+    document.getElementById("termNext").addEventListener("click", function(){
+      window.__termIndex = ((window.__termIndex||0) + 1) % cmdQs.length;
+      render();
+    });
+  }
+
+  var verseNext = document.getElementById("verseNextBtn");
+  if(verseNext){
+    verseNext.addEventListener("click", function(){
+      var next = Math.floor(Math.random()*DATA.verses.length);
+      window.__verseIndex = next;
+      render();
+    });
+  }
+  var verseSave = document.getElementById("verseSaveBtn");
+  if(verseSave){
+    verseSave.addEventListener("click", function(){
+      var vi = window.__verseIndex || 0;
+      state.notes["verse_"+vi] = document.getElementById("verseNote").value;
+      saveState();
+      verseSave.textContent = "Gespeichert ✓";
+      setTimeout(function(){ verseSave.textContent = "Notiz speichern"; }, 1500);
+    });
+  }
+}
+
+/* =========================================================
+   FOCUS TIMER (Pomodoro, 25 min)
+   ========================================================= */
+var TIMER_TOTAL = 25*60;
+var timerRemaining = TIMER_TOTAL;
+var timerRunning = false;
+var timerInterval = null;
+var timerDone = false;
+var RING_CIRC = 2*Math.PI*15.5;
+
+function updateTimerDisplay(){
+  var m = Math.floor(timerRemaining/60);
+  var s = timerRemaining%60;
+  document.getElementById("timerLabel").textContent = (m<10?"0":"")+m+":"+(s<10?"0":"")+s;
+  var progressEl = document.getElementById("timerProgress");
+  var frac = timerRemaining/TIMER_TOTAL;
+  progressEl.setAttribute("stroke-dasharray", RING_CIRC.toFixed(1));
+  progressEl.setAttribute("stroke-dashoffset", (RING_CIRC*(1-frac)).toFixed(1));
+  document.getElementById("timerRing").classList.toggle("done", timerDone);
+}
+
+function tickTimer(){
+  if(timerRemaining > 0){
+    timerRemaining--;
+    if(timerRemaining === 0){
+      timerDone = true;
+      timerRunning = false;
+      clearInterval(timerInterval);
+    }
+    updateTimerDisplay();
+  }
+}
+
+function toggleTimer(){
+  if(timerDone){
+    timerRemaining = TIMER_TOTAL; timerDone = false; timerRunning = false;
+    updateTimerDisplay();
+    return;
+  }
+  if(timerRunning){
+    timerRunning = false;
+    clearInterval(timerInterval);
+  } else {
+    timerRunning = true;
+    timerInterval = setInterval(tickTimer, 1000);
+  }
+}
+
+document.getElementById("timerWidget").addEventListener("click", toggleTimer);
+
+/* =========================================================
+   NETWORK STATUS
+   ========================================================= */
+function updateNetStatus(){
+  var pill = document.getElementById("netStatus");
+  pill.classList.toggle("offline", !navigator.onLine);
+}
+window.addEventListener("online", updateNetStatus);
+window.addEventListener("offline", updateNetStatus);
+
+/* =========================================================
+   SETTINGS DRAWER
+   ========================================================= */
+var drawer = document.getElementById("settingsDrawer");
+var backdrop = document.getElementById("drawerBackdrop");
+function openDrawer(){ drawer.classList.add("open"); backdrop.classList.add("open"); }
+function closeDrawer(){ drawer.classList.remove("open"); backdrop.classList.remove("open"); }
+document.getElementById("settingsBtn").addEventListener("click", openDrawer);
+document.getElementById("drawerClose").addEventListener("click", closeDrawer);
+backdrop.addEventListener("click", closeDrawer);
+
+document.getElementById("exportBtn").addEventListener("click", function(){
+  var blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = "navy-focus-export.json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+});
+
+document.getElementById("importFile").addEventListener("change", function(e){
+  var file = e.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(evt){
+    try{
+      var parsed = JSON.parse(evt.target.result);
+      var d = defaultState();
+      state = {
+        progress:Object.assign(d.progress, parsed.progress||{}),
+        notes:Object.assign(d.notes, parsed.notes||{}),
+        settings:Object.assign(d.settings, parsed.settings||{})
+      };
+      saveState();
+      render();
+      renderNav();
+      alert("Import erfolgreich.");
+    }catch(err){
+      alert("Import fehlgeschlagen: Datei ist kein gültiges JSON.");
+    }
+  };
+  reader.readAsText(file);
+});
+
+document.getElementById("resetBtn").addEventListener("click", function(){
+  if(confirm("Wirklich alle lokalen Daten löschen? Das kann nicht rückgängig gemacht werden.")){
+    state = defaultState();
+    saveState();
+    render();
+    renderNav();
+  }
+});
+
+/* =========================================================
+   AUDIO FAHRTMODUS (Web Speech API)
+   ========================================================= */
+var driveView = document.getElementById("driveView");
+var driveStatusEl = document.getElementById("driveStatus");
+var driveQuestionEl = document.getElementById("driveQuestion");
+var driveMicEl = document.getElementById("driveMic");
+var driveOptionsListEl = document.getElementById("driveOptionsList");
+var driveBigBtns = document.getElementById("driveBigBtns");
+
+var driveAllQuestions = [];
+function buildDrivePool(){
+  driveAllQuestions = [];
+  ["geo","tech","faith","mobility"].forEach(function(cat){
+    DATA[cat].forEach(function(q){ driveAllQuestions.push(Object.assign({cat:cat}, q)); });
+  });
+}
+var driveIdx = -1;
+var recognizer = null;
+var speechSupported = ("speechSynthesis" in window);
+var recognitionSupported = ("webkitSpeechRecognition" in window) || ("SpeechRecognition" in window);
+
+function speak(text, onEnd){
+  if(!speechSupported){ if(onEnd) onEnd(); return; }
+  window.speechSynthesis.cancel();
+  var u = new SpeechSynthesisUtterance(text);
+  u.lang = "de-DE";
+  u.rate = 1.0;
+  if(onEnd) u.onend = onEnd;
+  window.speechSynthesis.speak(u);
+}
+
+function openDriveMode(){
+  buildDrivePool();
+  driveIdx = -1;
+  driveView.classList.remove("hidden");
+  driveStatusEl.textContent = "Bereit";
+  driveQuestionEl.textContent = "Tippe auf Start, um zu beginnen.";
+  driveOptionsListEl.textContent = "";
+  driveBigBtns.innerHTML = '<button class="drive-big-btn" id="driveStartBtn">Start</button>';
+  document.getElementById("driveStartBtn").addEventListener("click", startDriveRound);
+}
+
+function closeDriveMode(){
+  driveView.classList.add("hidden");
+  if(speechSupported) window.speechSynthesis.cancel();
+  if(recognizer){ try{ recognizer.stop(); }catch(e){} }
+  driveMicEl.classList.remove("listening");
+}
+document.getElementById("driveClose").addEventListener("click", closeDriveMode);
+
+function nextDriveQuestion(){
+  driveIdx = (driveIdx + 1) % driveAllQuestions.length;
+  return driveAllQuestions[driveIdx];
+}
+
+function startDriveRound(){
+  driveBigBtns.innerHTML = "";
+  askDriveQuestion();
+}
+
+function askDriveQuestion(){
+  var q = nextDriveQuestion();
+  var letters = ["A","B","C","D"];
+  var optText = q.opts.map(function(o,i){ return letters[i]+": "+o; }).join(" · ");
+  driveQuestionEl.textContent = q.q;
+  driveOptionsListEl.textContent = optText;
+  driveStatusEl.textContent = "Frage wird vorgelesen...";
+  driveMicEl.classList.remove("listening");
+
+  var fullText = q.q + ". Antwortmöglichkeiten: " + q.opts.map(function(o,i){ return letters[i]+", "+o; }).join(". ");
+  speak(fullText, function(){
+    startListening(q, letters);
+  });
+}
+
+function startListening(q, letters){
+  if(!recognitionSupported){
+    driveStatusEl.textContent = "Spracherkennung nicht verfügbar. Bitte Option antippen.";
+    renderDriveManualButtons(q, letters);
+    return;
+  }
+  driveStatusEl.textContent = "Höre zu... sag A, B, C oder D";
+  driveMicEl.classList.add("listening");
+  var SR = window.webkitSpeechRecognition || window.SpeechRecognition;
+  recognizer = new SR();
+  recognizer.lang = "de-DE";
+  recognizer.continuous = false;
+  recognizer.interimResults = false;
+  recognizer.maxAlternatives = 3;
+
+  var handled = false;
+  recognizer.onresult = function(event){
+    if(handled) return;
+    var transcript = event.results[0][0].transcript.toLowerCase();
+    var mapping = {
+      "a":0,"eins":0,"1":0,
+      "b":1,"zwei":1,"2":1,
+      "c":2,"drei":2,"3":2,
+      "d":3,"vier":3,"4":3
+    };
+    var chosen = null;
+    Object.keys(mapping).forEach(function(key){
+      if(transcript.indexOf(key) !== -1 && chosen === null) chosen = mapping[key];
+    });
+    handled = true;
+    driveMicEl.classList.remove("listening");
+    if(chosen === null){
+      driveStatusEl.textContent = "Nicht verstanden: \""+transcript+"\"";
+      renderDriveManualButtons(q, letters);
+    } else {
+      handleDriveAnswer(q, chosen);
+    }
+  };
+  recognizer.onerror = function(){
+    handled = true;
+    driveMicEl.classList.remove("listening");
+    driveStatusEl.textContent = "Fehler bei Spracherkennung. Bitte antippen.";
+    renderDriveManualButtons(q, letters);
+  };
+  recognizer.onend = function(){
+    driveMicEl.classList.remove("listening");
+    if(!handled) renderDriveManualButtons(q, letters);
+  };
+  try{ recognizer.start(); }catch(e){
+    renderDriveManualButtons(q, letters);
+  }
+}
+
+function renderDriveManualButtons(q, letters){
+  driveBigBtns.innerHTML = letters.map(function(l,i){
+    return '<button class="drive-big-btn" data-manual="'+i+'">'+l+'</button>';
+  }).join("");
+  driveBigBtns.querySelectorAll("[data-manual]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      handleDriveAnswer(q, parseInt(btn.getAttribute("data-manual"),10));
+    });
+  });
+}
+
+function handleDriveAnswer(q, chosenIdx){
+  var correct = (chosenIdx === q.correct);
+  markAnswered(q.cat, q.id, correct);
+  driveBigBtns.innerHTML = "";
+  var msg = correct ? "Richtig!" : ("Falsch, richtig war Option "+["A","B","C","D"][q.correct]+".");
+  driveStatusEl.textContent = msg;
+  speak(msg, function(){
+    setTimeout(function(){
+      if(!driveView.classList.contains("hidden")) askDriveQuestion();
+    }, 3000);
+  });
+}
+
+/* =========================================================
+   PWA: MANIFEST + SERVICE WORKER (inline via Blob)
+   ========================================================= */
+(function setupManifest(){
+  var manifest = {
+    name:"Navy Focus",
+    short_name:"NavyFocus",
+    start_url:".",
+    display:"standalone",
+    background_color:"#0B132B",
+    theme_color:"#0B132B",
+    icons:[
+      {src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%230B132B'/%3E%3Ccircle cx='96' cy='96' r='48' fill='none' stroke='%235BC0BE' stroke-width='12'/%3E%3C/svg%3E", sizes:"192x192", type:"image/svg+xml"}
+    ]
+  };
+  var blob = new Blob([JSON.stringify(manifest)], {type:"application/json"});
+  var url = URL.createObjectURL(blob);
+  var link = document.createElement("link");
+  link.rel = "manifest";
+  link.href = url;
+  document.head.appendChild(link);
+})();
+
+(function setupServiceWorker(){
+  if(!("serviceWorker" in navigator)) return;
+  var swSource = [
+    "var CACHE_NAME = 'navy-focus-cache-v1';",
+    "self.addEventListener('install', function(event){",
+    "  event.waitUntil(caches.open(CACHE_NAME).then(function(cache){",
+    "    return cache.add(self.registration.scope);",
+    "  }).catch(function(){}));",
+    "  self.skipWaiting();",
+    "});",
+    "self.addEventListener('activate', function(event){ self.clients.claim(); });",
+    "self.addEventListener('fetch', function(event){",
+    "  if(event.request.method !== 'GET') return;",
+    "  event.respondWith(",
+    "    caches.match(event.request).then(function(cached){",
+    "      var fetchPromise = fetch(event.request).then(function(response){",
+    "        if(response && response.status === 200){",
+    "          var copy = response.clone();",
+    "          caches.open(CACHE_NAME).then(function(cache){ cache.put(event.request, copy); });",
+    "        }",
+    "        return response;",
+    "      }).catch(function(){ return cached; });",
+    "      return cached || fetchPromise;",
+    "    })",
+    "  );",
+    "});"
+  ].join("\\n");
+  try{
+    var blob = new Blob([swSource], {type:"application/javascript"});
+    var swUrl = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swUrl).catch(function(){ /* offline registration failed silently */ });
+  }catch(e){ /* SW setup unsupported, ignore */ }
+})();
+
+/* =========================================================
+   INIT
+   ========================================================= */
+function init(){
+  renderNav();
+  render();
+  updateTimerDisplay();
+  updateNetStatus();
+}
+init();
+
+})();
+</script>
+</body>
+</html>
