@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://api.github.com https://api.open-meteo.com https://geocoding-api.open-meteo.com; worker-src 'self' blob:; manifest-src data:; object-src 'none'; base-uri 'self'; form-action 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://api.github.com https://gist.githubusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com; worker-src 'self' blob:; manifest-src data:; object-src 'none'; base-uri 'self'; form-action 'self';">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Trainingsblog</title>
 <meta name="theme-color" content="#0A0A0A">
@@ -1124,7 +1124,7 @@
   }
 </style>
 <!-- verbund-design:start -->
-<script data-design="panel">
+<script data-design="panel" data-sync="training">
 /* SportGermany-Design: 10 dunkle Farbwelten für alle Apps. Läuft im <head>, damit beim Laden nichts aufblitzt.
  * Die Wahl liegt im gemeinsamen Speicher (gilt sofort für alle Apps) und wird vom Verbund-Sync mit abgeglichen.
  * data-design nennt, welche CSS-Variablen die jeweilige App benutzt. */
@@ -1133,8 +1133,8 @@
   if (window.SGTheme) return;
   var KEY = "sg-design";
   var THEMES = [
+    { id: "mitternacht", name: "Mitternacht", info: "Tiefes Nachtblau (Standard)", bg: "#0d1117", s1: "#151b23", s2: "#1c2430", s3: "#243040", line: "#2a3646", ink: "#e6edf3", muted: "#9aa7b4", faint: "#5d6b7a", acc: "#6ea8fe" },
     { id: "graphit", name: "Graphit", info: "Warmes Anthrazit, Bernstein", bg: "#141412", s1: "#1c1b19", s2: "#252421", s3: "#2e2c29", line: "#353330", ink: "#ebe9e4", muted: "#a29e95", faint: "#6e6a62", acc: "#e8a55a" },
-    { id: "mitternacht", name: "Mitternacht", info: "Tiefes Nachtblau", bg: "#0d1117", s1: "#151b23", s2: "#1c2430", s3: "#243040", line: "#2a3646", ink: "#e6edf3", muted: "#9aa7b4", faint: "#5d6b7a", acc: "#6ea8fe" },
     { id: "wald", name: "Wald", info: "Moos und Tannengrün", bg: "#0f1411", s1: "#161d18", s2: "#1d2620", s3: "#253028", line: "#2c382f", ink: "#e4ece5", muted: "#9cab9f", faint: "#627066", acc: "#7cc49a" },
     { id: "espresso", name: "Espresso", info: "Dunkle Röstung, Karamell", bg: "#15110e", s1: "#1e1814", s2: "#28201b", s3: "#322822", line: "#3a2f28", ink: "#f0e7df", muted: "#b3a497", faint: "#7a6c60", acc: "#d4915c" },
     { id: "schiefer", name: "Schiefer", info: "Kühles Grau, Eisblau", bg: "#121417", s1: "#1a1d21", s2: "#22262b", s3: "#2b3036", line: "#33383f", ink: "#e8eaed", muted: "#a0a7b0", faint: "#69707a", acc: "#8ab4c9" },
@@ -1154,13 +1154,34 @@
     puls: { bg: "bg", surface: "s1", ink: "ink", muted: "muted", line: "line", breath: "acc", "breath-soft": "accsoft" },
     kalender: { bg: "bg", s1: "s1", s2: "s2", s3: "s3", line: "line", line2: "s2", ink: "ink", muted: "muted", faint: "faint", acc: "acc", accfg: "accfg" }
   };
+  // Laptop-Anpassungen: schmale Handy-Spalten verbreitern, zu breite Seiten mittig begrenzen
+  var LAYOUT = {
+    panel: "@media(min-width:900px){.onb{padding-left:max(24px,calc(50vw - 380px))!important;padding-right:max(24px,calc(50vw - 380px))!important}}",
+    bibel: "@media(min-width:900px){.app,.overlay-inner{max-width:720px}}"
+  };
   var FONTVARS = { rodeln: ["fd", "fb"], puls: ["font-display", "font-body"], bibel: ["sans"] };
   var script = document.currentScript;
   var MODE = (script && script.getAttribute("data-design")) || "panel";
+  // Daten, die der Cloud-Sync kurz vor einem Neuladen übernommen hat, zurückschreiben, BEVOR die App startet –
+  // so kann die App sie beim Schließen nicht mit ihrem alten Stand überschreiben.
+  (function () {
+    var sid = script && script.getAttribute("data-sync");
+    try {
+      Object.keys(localStorage).forEach(function (k) {
+        if (k.indexOf("sg-apply-on-boot:") !== 0) return;
+        var e = JSON.parse(localStorage.getItem(k) || "null");
+        if (!e || Date.now() - e.t > 10 * 60000) { localStorage.removeItem(k); return; }
+        if (sid && k === "sg-apply-on-boot:" + sid) {
+          Object.keys(e.data || {}).forEach(function (d) { localStorage.setItem(d, e.data[d]); });
+          localStorage.removeItem(k);
+        }
+      });
+    } catch (e) {}
+  })();
 
   function rgba(hex, a) { var n = parseInt(hex.slice(1), 16); return "rgba(" + (n >> 16) + "," + (n >> 8 & 255) + "," + (n & 255) + "," + a + ")"; }
   function get(id) { return THEMES.find(function (t) { return t.id === id; }) || THEMES[0]; }
-  function currentId() { try { return localStorage.getItem(KEY) || "graphit"; } catch (e) { return "graphit"; } }
+  function currentId() { try { return localStorage.getItem(KEY) || "mitternacht"; } catch (e) { return "mitternacht"; } }
   function css(t) {
     var roles = Object.assign({ accsoft: rgba(t.acc, .16), accfg: "#14120f" }, t), map = MAPS[MODE] || MAPS.panel;
     var vars = Object.keys(map).map(function (k) { return "--" + k + ":" + roles[map[k]]; }).join(";");
@@ -1168,7 +1189,7 @@
     // :not(#sg) hebt die Regel über alle Hell/Dunkel-Regeln der Apps – alle Apps bleiben dunkel.
     // In der Bibel bleiben Sepia- und Nachtmodus als Lesemodi erhalten.
     var sel = MODE === "bibel" ? "html:root:not(#sg):not([data-theme=\"sepia\"]):not([data-theme=\"night\"])" : "html:root:not(#sg)";
-    return sel + "{" + vars + "}html:not(#sg) body{background-color:var(--bg)}body,button,input,select,textarea{font-family:" + FONT + "}";
+    return sel + "{" + vars + "}html:not(#sg) body{background-color:var(--bg)}body,button,input,select,textarea{font-family:" + FONT + "}" + (LAYOUT[MODE] || "");
   }
   function apply(id) {
     var t = get(id || currentId());
@@ -12874,15 +12895,17 @@ window.APP5 = {
 
   /* ---------- Die Apps des Verbunds ----------
    * keys: localStorage-Schlüssel, deren Inhalt der Cloud-Sync geräteübergreifend abgleicht.
-   * Lernplan und Trainingsblog haben einen eigenen GitHub-Sync und bleiben hier deshalb außen vor. */
+   * Bewusst NICHT dabei: gerätebezogene Daten wie Zugangsschlüssel, Wetter-Cache oder Fensterstellungen
+   * (Lernplan: schulplaner-lokal-v1, Trainingsblog: wk_sync, wk_syncmethod, wk_weather*, wk_uiprefs …).
+   * Focus und Trainingsblog teilen sich dieselben Daten (shares). */
   var APPS = [
     { id: "kalender", name: "Kalender", path: "Kalender", color: "#2d4a6b", info: "Großer Kalender, Aufgaben, Briefing", keys: [] },
-    { id: "lernplan", name: "Lernplan", path: "Schulplaner", color: "#2b5fd9", info: "Schule, Stundenplan, Aufgaben", keys: [] },
-    { id: "training", name: "Trainingsblog", path: "trainingsblog", color: "#2f7d57", info: "Tägliches Bodyweight-Training", keys: [] },
+    { id: "lernplan", name: "Lernplan", path: "Schulplaner", color: "#2b5fd9", info: "Schule, Stundenplan, Aufgaben", keys: ["schulkalender-bayern-v1"] },
+    { id: "training", name: "Trainingsblog", path: "trainingsblog", color: "#2f7d57", info: "Tägliches Bodyweight-Training", keys: ["wk_settings", "wk_log", "wk_activities", "wk_runs", "wk_body", "wk_colors", "wk_custom_ex", "wk_custom_gym", "wk_freezes", "wk_gymlog", "wk_illness_active", "wk_injury_active", "wk_injurydays", "wk_onboarded", "wk_race", "wk_rests", "wk_sections", "wk_sickdays", "wk_skin", "wk_swaps", "wk_trainedoverride", "wk_vacation", "wk_weekgoal", "wk_widgets"] },
     { id: "rodeln", name: "Rodel-Mobility", path: "Rodeln", color: "#c0303f", info: "Mobility für Rennrodler", keys: ["rodelmobility.v1"] },
     { id: "puls", name: "Pulsplan", path: "Pulsplan", color: "#b4532a", info: "Atmung und Puls", keys: ["pulsplan.v1"] },
     { id: "denkpause", name: "Denkpause", path: "Ablenkung", color: "#8a6d1f", info: "Wissen statt Kurzvideos", keys: ["denkpause.v1"] },
-    { id: "focus", name: "Focus", path: "Focus", color: "#3d6b73", info: "Training und Fokus", keys: [] },
+    { id: "focus", name: "Focus", path: "Focus", color: "#3d6b73", info: "Training und Fokus", keys: [], shares: "training" },
     { id: "bibel", name: "Bibel", path: "Bibel", color: "#6b4a3a", info: "Zwei Minuten Bibel", keys: ["zweiminutenbibel_v2"] }
   ];
   var KEY = "sg-shared-calendar-v1";
@@ -12988,7 +13011,14 @@ window.APP5 = {
     if (root) render(true);
   }
   window.addEventListener("storage", function (e) { if (e.key === KEY || e.key === TKEY || e.key === null) emit(); });
-  if (chan) chan.onmessage = emit;
+  if (chan) chan.onmessage = function (m) {
+    if (m.data && m.data.applied) {
+      var a = APPS.find(function (x) { return x.id === m.data.applied; });
+      if (a && isMe(a) && root) { bootApply(a); pending[a.id] = { kind: "reload", remote: {} }; render(true); }
+      return;
+    }
+    emit();
+  };
   document.addEventListener("visibilitychange", function () { if (!document.hidden) emit(); });
 
   var api = {
@@ -13078,6 +13108,9 @@ window.APP5 = {
   function meta() { try { return JSON.parse(localStorage.getItem(META_KEY) || "{}"); } catch (e) { return {}; } }
   function setMeta(id, m) { var all = meta(); all[id] = m; try { localStorage.setItem(META_KEY, JSON.stringify(all)); } catch (e) {} }
   var pending = {}; // id -> { remote } bei Konflikt oder wartender Übernahme in einer offenen App
+  function bootApply(app) { try { localStorage.setItem("sg-apply-on-boot:" + app.id, JSON.stringify({ t: Date.now(), data: snapshot(app) })); } catch (e) {} }
+  function isMe(app) { return app.id === ME.id || app.id === ME.shares; }
+  var MYDATA = APPS.find(function (a) { return a.id === (ME.shares || ME.id); }) || ME;
 
   function applyRemote(app, remote) {
     app.keys.forEach(function (k) {
@@ -13085,6 +13118,9 @@ window.APP5 = {
     });
     setMeta(app.id, { hash: hash(snapshot(app)), remote: remote.changed });
     delete pending[app.id];
+    if (isMe(app)) bootApply(app);
+    // Ist diese App gerade in einem anderen Fenster offen, muss sie neu laden, sonst überschreibt sie die neuen Daten.
+    if (chan) try { chan.postMessage({ applied: app.id }); } catch (e) {}
   }
 
   /* ---------- Cloud-Sync über einen privaten GitHub-Gist ----------
@@ -13118,6 +13154,13 @@ window.APP5 = {
         .then(function (g) { return g.id; });
     });
   }
+  // Die GitHub-API kürzt Dateien über 1 MB; dann den vollständigen Inhalt nachladen.
+  function fullGist(g) {
+    var cut = Object.keys(g.files || {}).filter(function (k) { return g.files[k].truncated && g.files[k].raw_url; });
+    return Promise.all(cut.map(function (k) {
+      return fetch(g.files[k].raw_url, { cache: "no-store" }).then(function (r) { return r.text(); }).then(function (t) { g.files[k].content = t; });
+    })).then(function () { return g; });
+  }
   function readJSON(f) { try { return f && f.content ? JSON.parse(f.content) : null; } catch (e) { return null; } }
 
   // Gleicht die Daten aller Verbund-Apps ab, nicht nur der gerade offenen –
@@ -13129,12 +13172,18 @@ window.APP5 = {
       var local = snapshot(app), h = hash(local), m = meta()[app.id] || {};
       var remote = readJSON(g.files && g.files["app-" + app.id + ".json"]);
       var localChanged = h !== m.hash && Object.keys(local).length > 0;
-      var remoteChanged = remote && remote.changed && remote.changed !== m.remote && hash(remote.data || {}) !== h;
+      if (sync.adopt && remote && remote.data) { // neues Gerät: Cloud-Stand übernehmen
+        applyRemote(app, remote);
+        if (isMe(app)) reloadSoon();
+        if (app.id === "einstellungen" && window.SGTheme) window.SGTheme.set(localStorage.getItem("sg-design") || "mitternacht");
+        return;
+      }
+      var remoteChanged = (!m.force || !Object.keys(local).length) && remote && remote.changed && remote.changed !== m.remote && hash(remote.data || {}) !== h;
       if (remoteChanged && !localChanged) {
-        if (app.id === ME.id && Date.now() - sync.started > 5000) pending[app.id] = { remote: remote, kind: "update" };
+        if (isMe(app) && Date.now() - sync.started > 5000) pending[app.id] = { remote: remote, kind: "update" };
         else applyRemote(app, remote);
-        if (app.id === ME.id && !pending[app.id]) reloadSoon();
-        if (app.id === "einstellungen" && window.SGTheme) window.SGTheme.set(localStorage.getItem("sg-design") || "graphit");
+        if (isMe(app) && !pending[app.id]) reloadSoon();
+        if (app.id === "einstellungen" && window.SGTheme) window.SGTheme.set(localStorage.getItem("sg-design") || "mitternacht");
       } else if (remoteChanged && localChanged && !app.lww) {
         pending[app.id] = { remote: remote, kind: "conflict" };
       } else if (localChanged || (!remote && Object.keys(local).length)) { // bei lww: eigene neuere Wahl gewinnt
@@ -13163,7 +13212,7 @@ window.APP5 = {
     var idP = c.gist ? Promise.resolve(c.gist) : findOrCreateGist(token, load());
     return idP.then(function (id) {
       if (id !== c.gist) { c = cfg(); c.gist = id; setCfg(c); }
-      return gh("/gists/" + id, null, token).then(function (g) {
+      return gh("/gists/" + id, null, token).then(fullGist).then(function (g) {
         var files = {};
         // Termine und Aufgaben: frisch lesen, damit Änderungen während der Anfrage nicht verloren gehen.
         Object.keys(COLS).forEach(function (c) {
@@ -13274,7 +13323,7 @@ window.APP5 = {
   // Hell oder dunkel? Richtet sich nach dem tatsächlichen Hintergrund der App, damit das Fenster passt.
   function isDark() { return true; } // alle Apps laufen im Dunkelmodus
   function themeVars() {
-    var t = window.SGTheme ? window.SGTheme.current() : { s1: "#1c1b19", s2: "#252421", s3: "#2e2c29", line: "#353330", ink: "#ebe9e4", muted: "#a29e95", acc: "#e8a55a" };
+    var t = window.SGTheme ? window.SGTheme.current() : { s1: "#151b23", s2: "#1c2430", s3: "#243040", line: "#2a3646", ink: "#e6edf3", muted: "#9aa7b4", acc: "#6ea8fe" };
     return "--bg:" + t.s1 + ";--s1:" + t.s2 + ";--s2:" + t.s3 + ";--line:" + t.line + ";--fg:" + t.ink + ";--mut:" + t.muted + ";--acc:" + t.acc + ";--accfg:#14120f";
   }
   var ICON = "<svg viewBox='0 0 24 24' width='22' height='22' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round'><rect x='3.5' y='5' width='17' height='15.5' rx='2.5'/><path d='M3.5 9.5h17M8 3v4M16 3v4'/><path d='M7.5 13.5h2M11 13.5h2M14.5 13.5h2M7.5 17h2M11 17h2'/></svg>";
@@ -13289,6 +13338,7 @@ window.APP5 = {
     ".fab{position:fixed;z-index:2147483000;width:46px;height:46px;border-radius:14px;cursor:pointer;touch-action:none;",
     "background:var(--s1);color:var(--fg);border:1px solid var(--line);box-shadow:0 1px 2px rgba(0,0,0,.08),0 6px 18px rgba(0,0,0,.14);",
     "display:flex;align-items:center;justify-content:center}",
+    ".fab.edge{width:30px;height:54px;border-radius:12px 0 0 12px;border-right:0;box-shadow:-2px 2px 10px rgba(0,0,0,.3)}.fab.edge svg{width:18px;height:18px}.fab.edge .dot{top:-6px;right:auto;left:-6px}",
     ".fab .dot{position:absolute;top:-5px;right:-5px;min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:var(--acc);color:var(--accfg);font-size:11px;line-height:19px;font-weight:700;text-align:center}",
     ".wrap{position:fixed;inset:0;z-index:2147483001;background:rgba(20,18,15,.42);display:flex;align-items:flex-end;justify-content:center}",
     "@media(min-width:700px){.wrap{align-items:center}}",
@@ -13335,6 +13385,8 @@ window.APP5 = {
     ".th{text-align:left;border:2px solid;border-radius:12px;padding:10px;cursor:pointer;display:flex;flex-direction:column;gap:3px}",
     ".th b{font-size:14px}.th small{font-size:12px;line-height:1.3}.th.on{box-shadow:0 0 0 1px var(--acc)}",
     ".pv{display:flex;gap:4px;margin-bottom:4px}.pv i{width:18px;height:18px;border-radius:5px;display:block}.pv i:last-child{border-radius:50%}",
+    ".hist{display:flex;flex-direction:column;gap:4px;margin-top:8px}.hist button{text-align:left;border:1px solid var(--line);background:var(--s1);color:var(--fg);border-radius:9px;padding:9px 11px;font-size:14px;cursor:pointer}",
+    ".bl{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0}.bl span{background:var(--s2);border-radius:7px;padding:3px 8px;font-size:12px}",
     ".apps{display:grid;grid-template-columns:1fr 1fr;gap:8px}",
     ".app{display:flex;gap:10px;align-items:center;padding:11px;border-radius:12px;background:var(--s1);border:1px solid var(--line);color:var(--fg);text-decoration:none}",
     ".app.me{border-color:var(--fg)}",
@@ -13365,10 +13417,14 @@ window.APP5 = {
     render();
   }
 
+  // Handy: schmale Lasche am rechten Rand (verdeckt kaum Inhalt, nur senkrecht verschiebbar). Laptop: runder Knopf.
+  function edge() { return window.innerWidth <= 760; }
   function placeFab(fab) {
     var p = null;
     try { p = JSON.parse(localStorage.getItem(POS_KEY + ":" + APP) || "null"); } catch (e) {}
-    var x = p ? p.x : window.innerWidth - 58, y = p ? p.y : window.innerHeight - 230;
+    fab.classList.toggle("edge", edge());
+    var x = edge() ? window.innerWidth - 30 : p && p.x != null ? p.x : window.innerWidth - 66, y = p ? p.y : window.innerHeight * (edge() ? .58 : 1) - (edge() ? 0 : 150);
+    if (edge()) { fab.style.left = x + "px"; fab.style.top = Math.max(60, Math.min(window.innerHeight - 140, y)) + "px"; return; }
     fab.style.left = Math.max(4, Math.min(window.innerWidth - 50, x)) + "px";
     fab.style.top = Math.max(4, Math.min(window.innerHeight - 50, y)) + "px";
   }
@@ -13384,12 +13440,12 @@ window.APP5 = {
       var dx = e.clientX - sx, dy = e.clientY - sy;
       if (!moved && Math.abs(dx) + Math.abs(dy) < 8) return;
       moved = true;
-      fab.style.left = Math.max(4, Math.min(window.innerWidth - 50, ox + dx)) + "px";
+      if (!edge()) fab.style.left = Math.max(4, Math.min(window.innerWidth - 50, ox + dx)) + "px";
       fab.style.top = Math.max(4, Math.min(window.innerHeight - 50, oy + dy)) + "px";
     });
     fab.addEventListener("pointerup", function () {
       if (!down) return; down = false;
-      if (moved) try { localStorage.setItem(POS_KEY + ":" + APP, JSON.stringify({ x: fab.offsetLeft, y: fab.offsetTop })); } catch (e) {}
+      if (moved) try { localStorage.setItem(POS_KEY + ":" + APP, JSON.stringify({ x: edge() ? null : fab.offsetLeft, y: fab.offsetTop })); } catch (e) {}
     });
     fab.addEventListener("pointercancel", function () { down = false; });
     // Erst beim Klick öffnen: so landet der Tipp nicht zusätzlich auf dem Fenster, das sich gerade öffnet.
@@ -13435,16 +13491,19 @@ window.APP5 = {
   }
 
   function renderToast() {
-    var tb = root.querySelector(".tbox"), p = pending[ME.id];
+    var tb = root.querySelector(".tbox"), p = pending[MYDATA.id];
     if (!p) { tb.innerHTML = ""; return; }
     var who = p.remote.device ? " (" + esc(p.remote.device) + ")" : "";
-    tb.innerHTML = p.kind === "conflict"
+    tb.innerHTML = p.kind === "reload"
+      ? "<div class='toast'><span>Die Daten dieser App wurden gerade vom Sync aktualisiert.</span><button data-t='reload'>Neu laden</button></div>"
+      : p.kind === "conflict"
       ? "<div class='toast'><span>Deine Daten in " + esc(APP) + " wurden hier und auf einem anderen Gerät" + who + " geändert. Welche Fassung soll gelten?</span><button data-t='mine'>Diese hier</button><button data-t='theirs'>Die andere</button></div>"
       : "<div class='toast'><span>Neue Daten von einem anderen Gerät" + who + ".</span><button data-t='theirs'>Jetzt laden</button></div>";
     tb.querySelectorAll("[data-t]").forEach(function (b) {
       b.addEventListener("click", function () {
-        if (b.dataset.t === "theirs") { applyRemote(ME, p.remote); location.reload(); }
-        else { setMeta(ME.id, { hash: "", remote: p.remote.changed }); delete pending[ME.id]; renderToast(); syncNow(); }
+        if (b.dataset.t === "reload") location.reload();
+        else if (b.dataset.t === "theirs") { applyRemote(MYDATA, p.remote); location.reload(); }
+        else { setMeta(MYDATA.id, { hash: "", remote: p.remote.changed }); delete pending[MYDATA.id]; renderToast(); syncNow(); }
       });
     });
   }
@@ -13525,12 +13584,16 @@ window.APP5 = {
     if (sync.error) return "<div class='cl err'>" + esc(sync.error) + "</div>";
     return "<div class='cl ok'>Synchronisiert · " + ago(sync.last || c.last) + "</div>";
   }
+  /* ---------- Sicherung: Übersicht, frühere Stände, Datei ---------- */
+  function backedUp() {
+    return ["Kalender & Aufgaben"].concat(APPS.filter(function (a) { return a.keys.length; }).map(function (a) { return a.name + (a.id === "training" ? " / Focus" : ""); })).concat(["Design"]);
+  }
   function cloudView() {
     var c = cfg();
     var h = "";
+    if (state.hist) return histView();
     if (!c.token) {
-      h += "<p class='txt'>Mit dem Sync sind <b>Kalender</b> und die Daten von <b>" + APPS.filter(function (a) { return a.keys.length; }).map(function (a) { return esc(a.name); }).join(", ") +
-        "</b> auf all deinen Geräten gleich. Gespeichert wird in einem <b>privaten Gist</b> in deinem GitHub-Konto. Einrichten musst du das <b>einmal pro Gerät</b> – danach gilt es für alle Apps.</p>";
+      h += "<p class='txt'>Mit dem Sync sind <b>alle Daten aller Apps</b> auf deinen Geräten gleich und zusätzlich in der Cloud gesichert – in einem <b>privaten Gist</b> in deinem GitHub-Konto. Einrichten musst du das <b>einmal pro Gerät</b>, danach gilt es für alle Apps.</p>";
       h += "<ol class='txt'><li><a href='https://github.com/settings/tokens/new?scopes=gist&amp;description=SportGermany-Apps' target='_blank' rel='noopener'>Diesen Link öffnen</a> und bei GitHub anmelden.</li>" +
         "<li>Bei <b>Expiration</b> „No expiration“ wählen. Das Häkchen bei <b>gist</b> ist schon gesetzt – sonst nichts anhaken.</li>" +
         "<li>Unten <b>Generate token</b> tippen und den Code (beginnt mit <code>ghp_</code>) kopieren.</li>" +
@@ -13539,23 +13602,110 @@ window.APP5 = {
       if (sync.error) h += "<div class='cl err'>" + esc(sync.error) + "</div>";
       h += "<div class='act'><span class='sp'></span><button class='b p' data-a='connect'" + (sync.busy ? " disabled" : "") + ">" + (sync.busy ? "Verbinde …" : "Verbinden") + "</button></div>";
     } else {
-      h += "<p class='txt'>Verbunden als <b>" + esc(c.user || "?") + "</b>. Änderungen werden sofort hochgeladen; was du auf anderen Geräten änderst, kommt spätestens nach 30 Sekunden an.</p>";
+      h += "<p class='txt'>Verbunden als <b>" + esc(c.user || "?") + "</b>. Jede Änderung wird sofort gesichert; was du auf anderen Geräten änderst, kommt spätestens nach 30 Sekunden an.</p>";
       h += cloudLine();
-      h += "<p class='txt m'>Abgeglichen werden: Kalender, " + APPS.filter(function (a) { return a.keys.length; }).map(function (a) { return esc(a.name); }).join(", ") +
-        ". Lernplan und Trainingsblog nutzen weiter ihren eigenen Sync in den jeweiligen Einstellungen.</p>";
-      if (c.gist) h += "<p class='txt'><a href='https://gist.github.com/" + esc(c.gist) + "' target='_blank' rel='noopener'>Gespeicherte Daten auf GitHub ansehen</a></p>";
-      h += "<div class='act'><button class='b d' data-a='disconnect'>Trennen</button><span class='sp'></span><button class='b p' data-a='syncnow'>Jetzt synchronisieren</button></div>";
+      h += "<p class='txt m' style='margin-bottom:0'>Gesichert und abgeglichen:</p><div class='bl'>" + backedUp().map(function (n) { return "<span>" + esc(n) + "</span>"; }).join("") + "</div>";
+      h += "<p class='txt m'>Den alten eigenen Sync in Lernplan und Trainingsblog brauchst du nicht mehr – du kannst ihn dort in den Einstellungen ausschalten.</p>";
+      h += "<div class='act'><button class='b' data-a='history'>Frühere Stände</button>" + (c.gist ? "<a class='b' href='https://gist.github.com/" + esc(c.gist) + "' target='_blank' rel='noopener'>Auf GitHub</a>" : "") +
+        "<span class='sp'></span><button class='b p' data-a='syncnow'>Jetzt synchronisieren</button></div>";
     }
+    h += "<div class='tools'><button class='b' data-a='backup'>Alles als Datei sichern</button><button class='b' data-a='restorefile'>Sicherung einspielen</button>" +
+      (c.token ? "<span style='flex:1'></span><button class='b d' data-a='disconnect'>Trennen</button>" : "") + "</div>";
     return h;
+  }
+  function histView() {
+    var H = state.hist, h = "<div class='hd'><h2>Frühere Stände</h2><button class='b' data-a='histclose'>Zurück</button></div>";
+    h += "<p class='txt m'>GitHub hebt jeden gesicherten Stand auf. Beim Zurückholen werden <b>alle Apps</b> auf diesen Stand gesetzt – auf allen verbundenen Geräten.</p>";
+    if (H.loading) return h + "<p class='txt'>Lade …</p>";
+    if (H.error) return h + "<div class='cl err'>" + esc(H.error) + "</div>";
+    return h + "<div class='hist'>" + H.list.map(function (v, i) {
+      var d = new Date(v.committed_at), when = d.toLocaleString("de-DE", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+      return "<button data-ver='" + esc(v.version) + "' data-when='" + esc(when) + "'>" + esc(when) + (i === 0 ? " · aktuell" : "") + "</button>";
+    }).join("") + "</div>";
+  }
+  function loadHistory() {
+    var c = cfg();
+    if (!c.token || !c.gist) { state.hist = { error: "Noch nichts in der Cloud gesichert." }; render(); return; }
+    gh("/gists/" + c.gist + "/commits?per_page=30", null, c.token).then(function (list) {
+      state.hist = { list: list }; render();
+    }).catch(function (e) { state.hist = { error: e.message || "Laden fehlgeschlagen." }; render(); });
+  }
+
+  // Alle Daten aller Apps in einem Objekt – für Datei-Sicherung und Wiederherstellung
+  function allKeys() {
+    var keys = [KEY, TKEY, "sg-design"];
+    APPS.forEach(function (a) { keys = keys.concat(a.keys); });
+    return keys;
+  }
+  function fullBackup() {
+    var data = {};
+    allKeys().forEach(function (k) { var v = localStorage.getItem(k); if (v !== null) data[k] = v; });
+    return { format: "sportgermany-sicherung", v: 1, created: new Date().toISOString(), device: deviceName(), data: data };
+  }
+  // Einen Stand übernehmen und dafür sorgen, dass er sich auch auf den anderen Geräten durchsetzt:
+  // Termine/Aufgaben bekommen einen frischen Zeitstempel, was im Stand fehlt, wird als gelöscht markiert.
+  function applySnapshot(data) {
+    Object.keys(COLS).forEach(function (c) {
+      var col = COLS[c], raw = data[col.key];
+      if (raw == null) return;
+      var snap; try { snap = JSON.parse(raw); } catch (e) { return; }
+      var now = Date.now(), d = load(c), keep = {};
+      (snap.events || []).forEach(function (e) { e.changed = now; keep[e.id] = 1; });
+      d.events.forEach(function (e) { if (!keep[e.id] && !e.deleted) snap.events.push(Object.assign({}, e, { deleted: true, changed: now })); });
+      save({ v: 1, events: snap.events }, false, c);
+    });
+    APPS.concat(EXTRA).forEach(function (a) {
+      var touched = false;
+      a.keys.forEach(function (k) { if (Object.prototype.hasOwnProperty.call(data, k)) { localStorage.setItem(k, data[k]); touched = true; } });
+      if (touched) setMeta(a.id, { hash: "", remote: 0, force: true }); // gilt als lokal geändert und setzt sich durch
+    });
+  }
+  function restoreVersion(ver, when) {
+    var c = cfg();
+    if (!confirm("Alle Apps auf den Stand vom " + when + " zurücksetzen? Neuere Änderungen gehen dabei verloren.")) return;
+    state.hist = { loading: true }; render();
+    gh("/gists/" + c.gist + "/" + ver, null, c.token).then(fullGist).then(function (g) {
+      var data = {}, f = g.files || {};
+      Object.keys(COLS).forEach(function (k) { var x = f[COLS[k].file]; if (x && x.content) data[COLS[k].key] = x.content; });
+      APPS.concat(EXTRA).forEach(function (a) {
+        var r = readJSON(f["app-" + a.id + ".json"]);
+        if (r && r.data) Object.keys(r.data).forEach(function (k) { data[k] = r.data[k]; });
+      });
+      applySnapshot(data);
+      return syncNow();
+    }).then(function () { alert("Stand vom " + when + " wiederhergestellt."); location.reload(); })
+      .catch(function (e) { state.hist = { error: e.message || "Wiederherstellen fehlgeschlagen." }; render(); });
+  }
+  function restoreFile() {
+    var inp = document.createElement("input");
+    inp.type = "file"; inp.accept = ".json,application/json";
+    inp.onchange = function () {
+      var file = inp.files && inp.files[0]; if (!file) return;
+      file.text().then(function (txt) {
+        var b = JSON.parse(txt);
+        if (!b || b.format !== "sportgermany-sicherung" || !b.data) throw new Error("format");
+        if (!confirm("Sicherung vom " + new Date(b.created).toLocaleString("de-DE") + " einspielen? Die aktuellen Daten aller Apps werden ersetzt.")) return;
+        applySnapshot(b.data);
+        syncNow().then(function () { location.reload(); });
+      }).catch(function () { alert("Diese Datei ist keine Gesamtsicherung der Apps."); });
+    };
+    inp.click();
   }
   function connect(token) {
     token = token.trim();
     if (!token) return;
     sync.busy = true; sync.error = ""; render();
     gh("/user", null, token).then(function (u) {
-      setCfg({ token: token, user: u.login });
+      return findOrCreateGist(token, load()).then(function (id) { return gh("/gists/" + id, null, token).then(function (g) { return [u, id, g]; }); });
+    }).then(function (r) {
+      var u = r[0], g = r[2];
+      var hasData = Object.keys(g.files || {}).some(function (f) { return f.indexOf("app-") === 0; });
+      setCfg({ token: token, user: u.login, gist: r[1] });
       sync.busy = false;
-      return syncNow();
+      // Termine und Aufgaben werden ohnehin zusammengeführt; bei den App-Daten entscheidet die Person einmal.
+      sync.adopt = hasData && confirm("In deiner Cloud sind schon Daten von einem anderen Gerät gesichert.\n\nOK = diese Daten auf dieses Gerät übernehmen (empfohlen für ein neues Gerät)\nAbbrechen = die Daten dieses Geräts behalten und hochladen");
+      if (hasData && !sync.adopt) APPS.concat(EXTRA).forEach(function (a) { if (a.keys.length) setMeta(a.id, { hash: "", remote: 0, force: true }); });
+      return syncNow().then(function (ok) { sync.adopt = false; return ok; });
     }).catch(function (e) {
       sync.busy = false;
       sync.error = (e && e.message && !/fetch|network/i.test(e.message)) ? e.message : "Keine Verbindung zu GitHub.";
@@ -13583,10 +13733,11 @@ window.APP5 = {
   function bind(box) {
     box.querySelector(".wrap").addEventListener("click", function (ev) {
       if (ev.target.classList.contains("wrap")) { close(); return; }
-      var t = ev.target.closest("[data-a],[data-day],[data-id],[data-tab],[data-theme]");
+      var t = ev.target.closest("[data-a],[data-day],[data-id],[data-tab],[data-theme],[data-ver]");
       if (!t) return;
       if (t.dataset.tab) { state.tab = t.dataset.tab; render(); return; }
       if (t.dataset.theme && window.SGTheme) { window.SGTheme.set(t.dataset.theme); render(); return; }
+      if (t.dataset.ver) { restoreVersion(t.dataset.ver, t.dataset.when); return; }
       if (t.dataset.day) { state.sel = t.dataset.day; render(); return; }
       if (t.dataset.id && !t.dataset.a) {
         var e = live().find(function (x) { return x.id === t.dataset.id; }); // bei Serien: die ganze Serie
@@ -13618,6 +13769,10 @@ window.APP5 = {
     else if (a === "connect") return connect(box.querySelector("[name=token]").value);
     else if (a === "syncnow") return syncNow();
     else if (a === "notify") return askNotify();
+    else if (a === "backup") return download("sportgermany-sicherung-" + iso(new Date()) + ".json", "application/json", JSON.stringify(fullBackup(), null, 1));
+    else if (a === "restorefile") return restoreFile();
+    else if (a === "history") { state.hist = { loading: true }; render(); loadHistory(); return; }
+    else if (a === "histclose") state.hist = null;
     else if (a === "disconnect") {
       if (!confirm("Sync auf diesem Gerät beenden? Alle Daten bleiben hier und auf GitHub erhalten.")) return;
       setCfg(null); sync.error = ""; sync.last = 0;
