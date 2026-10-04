@@ -12796,7 +12796,9 @@ window.APP5 = {
 /* Gemeinsamer Kalender für alle SportGermany-Apps (v1)
  * Alle Apps liegen auf sportgermany.github.io und teilen sich deshalb denselben
  * localStorage. Termine werden unter einem gemeinsamen Schlüssel gespeichert und
- * in allen offenen Apps sofort aktualisiert. Diesen Block in jeder App identisch halten.
+ * in allen offenen Apps sofort aktualisiert. Mit „Cloud-Sync“ wird der Kalender zusätzlich
+ * in einem privaten GitHub-Gist gespeichert und so zwischen mehreren Geräten abgeglichen.
+ * Diesen Block in jeder App identisch halten.
  * API für die Apps: window.SharedCalendar.{open, list, add, update, remove, onChange}
  */
 (function () {
@@ -12804,6 +12806,10 @@ window.APP5 = {
   if (window.SharedCalendar) return;
   var KEY = "sg-shared-calendar-v1";
   var POS_KEY = "sg-shared-calendar-btn";
+  var SYNC_KEY = "sg-shared-calendar-sync";
+  var GIST_FILE = "kalender.json";
+  var GIST_DESC = "Gemeinsamer Kalender (SportGermany-Apps)";
+  var GH = "https://api.github.com";
   var script = document.currentScript;
   var APP = (script && script.getAttribute("data-app")) || document.title || "App";
   var MON = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
@@ -12821,12 +12827,30 @@ window.APP5 = {
     } catch (e) {}
     return { v: 1, events: [] };
   }
-  function save(d) {
+  function save(d, fromCloud) {
     d.updated = Date.now();
+    purge(d);
     try { localStorage.setItem(KEY, JSON.stringify(d)); }
     catch (e) { alert("Kalender konnte nicht gespeichert werden (Speicher voll?)."); return; }
     if (chan) try { chan.postMessage("changed"); } catch (e) {}
     emit();
+    if (!fromCloud) schedulePush();
+  }
+  // Löschmarkierungen nach einem Jahr endgültig entfernen, damit die Datei nicht endlos wächst.
+  function purge(d) {
+    var limit = Date.now() - 365 * 864e5;
+    d.events = d.events.filter(function (e) { return !(e.deleted && (e.changed || 0) < limit); });
+  }
+  // Führt Termine zusammen: pro Termin gewinnt die zuletzt geänderte Fassung (auch Löschungen).
+  function mergeInto(d, events) {
+    var added = 0, changed = false;
+    (events || []).forEach(function (e) {
+      if (!e || !e.id || !/^\d{4}-\d{2}-\d{2}$/.test(e.date)) return;
+      var i = d.events.findIndex(function (x) { return x.id === e.id; });
+      if (i < 0) { d.events.push(e); added++; changed = true; }
+      else if ((e.changed || 0) > (d.events[i].changed || 0)) { d.events[i] = e; changed = true; }
+    });
+    return { added: added, changed: changed };
   }
   // Jede Änderung liest zuerst den aktuellen Stand, damit keine App die Termine einer anderen überschreibt.
   function mutate(fn) { var d = load(); var r = fn(d); save(d); return r; }
@@ -12839,7 +12863,7 @@ window.APP5 = {
   function emit() {
     var ev = live();
     listeners.forEach(function (f) { try { f(ev); } catch (e) {} });
-    if (root) render();
+    if (root) render(true);
   }
   window.addEventListener("storage", function (e) { if (e.key === KEY || e.key === null) emit(); });
   if (chan) chan.onmessage = emit;
@@ -12873,9 +12897,91 @@ window.APP5 = {
       });
     },
     onChange: function (f) { listeners.push(f); return function () { listeners = listeners.filter(function (x) { return x !== f; }); }; },
-    open: function (date) { openPanel(date); }
+    open: function (date) { openPanel(date); },
+    sync: function () { return syncNow(); }
   };
   window.SharedCalendar = api;
+
+  /* ---------- Cloud-Sync über einen privaten GitHub-Gist ----------
+   * Der Zugangsschlüssel (Token) liegt im gemeinsamen Speicher, muss also pro Gerät
+   * nur einmal eingegeben werden und gilt dann für alle Apps. Ablauf bei jedem Abgleich:
+   * Gist lesen → mit den lokalen Terminen zusammenführen → nur bei Unterschied zurückschreiben. */
+  var sync = { busy: false, again: false, timer: null, error: "", last: 0 };
+  function cfg() { try { return JSON.parse(localStorage.getItem(SYNC_KEY) || "null") || {}; } catch (e) { return {}; } }
+  function setCfg(c) { try { if (c) localStorage.setItem(SYNC_KEY, JSON.stringify(c)); else localStorage.removeItem(SYNC_KEY); } catch (e) {} }
+  function gh(path, opt, token) {
+    opt = opt || {};
+    return fetch(GH + path, {
+      method: opt.method || "GET", cache: "no-store",
+      headers: { "Authorization": "Bearer " + token, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
+      body: opt.body ? JSON.stringify(opt.body) : undefined
+    }).then(function (r) {
+      if (r.status === 401) throw new Error("Der Token ist ungültig oder abgelaufen.");
+      if (r.status === 403 || r.status === 404) throw new Error("Kein Zugriff – hat der Token das Recht „gist“?");
+      if (!r.ok) throw new Error("GitHub antwortet mit Fehler " + r.status + ".");
+      return r.json();
+    });
+  }
+  function content(d) {
+    var events = d.events.slice().sort(function (a, b) { return a.id < b.id ? -1 : 1; });
+    return JSON.stringify({ v: 1, events: events }, null, 1);
+  }
+  function findOrCreateGist(token, d) {
+    return gh("/gists?per_page=100", null, token).then(function (list) {
+      var hit = list.find(function (g) { return g.files && g.files[GIST_FILE] && g.description === GIST_DESC; });
+      if (hit) return hit.id;
+      return gh("/gists", { method: "POST", body: { description: GIST_DESC, "public": false, files: { "kalender.json": { content: content(d) } } } }, token)
+        .then(function (g) { return g.id; });
+    });
+  }
+  function syncNow() {
+    var c = cfg();
+    if (!c.token) return Promise.resolve(false);
+    if (!navigator.onLine) { sync.error = "Offline – wird nachgeholt, sobald Internet da ist."; render(true); return Promise.resolve(false); }
+    if (sync.busy) { sync.again = true; return Promise.resolve(false); }
+    sync.busy = true; render(true);
+    var token = c.token;
+    var idP = c.gist ? Promise.resolve(c.gist) : findOrCreateGist(token, load());
+    return idP.then(function (id) {
+      if (id !== c.gist) { c = cfg(); c.gist = id; setCfg(c); }
+      return gh("/gists/" + id, null, token).then(function (g) {
+        var f = g.files && g.files[GIST_FILE];
+        var remote = { events: [] };
+        try { if (f && f.content) remote = JSON.parse(f.content); } catch (e) {}
+        // Frisch lesen, damit Änderungen während der Anfrage nicht verloren gehen.
+        var d = load();
+        if (mergeInto(d, remote.events).changed) save(d, true);
+        var local = content(load());
+        var rd = { events: remote.events || [] }; purge(rd);
+        if (local !== content(rd)) {
+          return gh("/gists/" + id, { method: "PATCH", body: { files: { "kalender.json": { content: local } } } }, token);
+        }
+      });
+    }).then(function () {
+      sync.error = ""; sync.last = Date.now();
+      var c2 = cfg(); if (c2.token) { c2.last = sync.last; setCfg(c2); }
+      return true;
+    }).catch(function (e) {
+      sync.error = (e && e.message && !/fetch|network/i.test(e.message)) ? e.message : "Keine Verbindung zu GitHub.";
+      // Gist wurde womöglich gelöscht: beim nächsten Mal neu suchen.
+      if (/Kein Zugriff/.test(sync.error)) { var c3 = cfg(); delete c3.gist; setCfg(c3); }
+      return false;
+    }).then(function (ok) {
+      sync.busy = false; render(true);
+      if (sync.again) { sync.again = false; syncNow(); }
+      return ok;
+    });
+  }
+  function schedulePush() {
+    if (!cfg().token) return;
+    clearTimeout(sync.timer);
+    sync.timer = setTimeout(syncNow, 1500);
+  }
+  // Regelmäßig nachsehen, ob ein anderes Gerät etwas geändert hat (nur solange die App sichtbar ist).
+  setInterval(function () { if (!document.hidden) syncNow(); }, 30000);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) syncNow(); });
+  window.addEventListener("online", function () { syncNow(); });
+  setTimeout(syncNow, 800);
 
   /* ---------- Hilfen ---------- */
   function pad(n) { return (n < 10 ? "0" : "") + n; }
@@ -12935,6 +13041,9 @@ window.APP5 = {
     ".row{display:flex;gap:8px}.row>*{flex:1}",
     ".act{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}.act .sp{flex:1}",
     ".tools{display:flex;gap:6px;flex-wrap:wrap;margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}",
+    ".cl{font-size:13px;color:var(--mut);margin:10px 0 0;cursor:pointer}.cl.ok{color:#1aa179}.cl.err{color:#d64545}",
+    ".txt{font-size:14px;margin:8px 0}.txt a{color:var(--acc)}ol.txt{padding-left:20px}ol.txt li{margin:4px 0}code{background:var(--soft);padding:1px 4px;border-radius:4px}",
+    "button.b[disabled]{opacity:.5}",
     ".chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mut);margin:8px 0 0}.chk input{width:auto}"
   ].join("");
 
@@ -12990,12 +13099,12 @@ window.APP5 = {
   function openPanel(date) {
     mount();
     var d = date ? parse(date) : new Date();
-    state.sel = iso(d); state.month = new Date(d.getFullYear(), d.getMonth(), 1); state.edit = null; state.open = true;
+    state.sel = iso(d); state.month = new Date(d.getFullYear(), d.getMonth(), 1); state.edit = null; state.cloud = false; state.open = true;
     render();
   }
-  function close() { state.open = false; state.edit = null; render(); }
+  function close() { state.open = false; state.edit = null; state.cloud = false; render(); }
 
-  function render() {
+  function render(bg) {
     if (!root) return;
     var all = live();
     var today = iso(new Date());
@@ -13004,9 +13113,11 @@ window.APP5 = {
     dot.hidden = !n; dot.textContent = n;
     var box = root.querySelector(".box");
     if (!state.open) { box.innerHTML = ""; return; }
+    // Hintergrund-Updates (andere App, anderes Gerät) dürfen kein gerade ausgefülltes Formular überschreiben.
+    if (bg && (state.edit || (state.cloud && !cfg().token))) return;
     var evs = state.filter ? all.filter(function (e) { return e.app === APP; }) : all;
     var h = "<div class='wrap'><div class='panel' role='dialog' aria-label='Gemeinsamer Kalender'>";
-    h += state.edit ? form(state.edit) : month(evs, today);
+    h += state.cloud ? cloudView() : state.edit ? form(state.edit) : month(evs, today);
     h += "</div></div>";
     box.innerHTML = h;
     bind(box);
@@ -13028,6 +13139,7 @@ window.APP5 = {
       h += "<div class='" + cls + "' data-day='" + k + "'><span class='n'>" + d.getDate() + "</span><span class='ds'>" + dots + "</span></div>";
     }
     h += "</div>";
+    h += cloudLine();
     h += "<label class='chk'><input type='checkbox' data-a='filter'" + (state.filter ? " checked" : "") + "> Nur Termine aus „" + esc(APP) + "“ zeigen</label>";
     var list = byDay[state.sel] || [];
     h += "<div class='sec'><div class='hd'><h3 style='flex:1;margin:0'>" + longDate(state.sel) + "</h3><button class='b p' data-a='new'>+ Termin</button></div>";
@@ -13035,7 +13147,7 @@ window.APP5 = {
     h += "</div>";
     var upcoming = evs.filter(function (e) { return e.date > state.sel; }).slice(0, 5);
     if (upcoming.length) h += "<div class='sec'><h3>Danach</h3>" + upcoming.map(function (e) { return item(e, true); }).join("") + "</div>";
-    h += "<div class='tools'><button class='b' data-a='export'>Sichern</button><button class='b' data-a='import'>Importieren</button><button class='b' data-a='ics'>Als .ics exportieren</button></div>";
+    h += "<div class='tools'><button class='b' data-a='export'>Sichern</button><button class='b' data-a='import'>Importieren</button><button class='b' data-a='ics'>Als .ics exportieren</button><button class='b' data-a='cloud'>☁ Cloud-Sync</button></div>";
     return h;
   }
 
@@ -13046,6 +13158,53 @@ window.APP5 = {
     meta.push(e.app);
     return "<div class='ev' data-id='" + esc(e.id) + "'><span class='bar' style='background:" + colorOf(e) + "'></span><div><div class='t'>" + esc(e.title) +
       "</div><div class='m'>" + esc(meta.join(" · ")) + "</div>" + (e.note ? "<div class='m'>" + esc(e.note) + "</div>" : "") + "</div></div>";
+  }
+
+  function ago(t) {
+    if (!t) return "noch nie";
+    var m = Math.round((Date.now() - t) / 60000);
+    return m < 1 ? "gerade eben" : m < 60 ? "vor " + m + " Min." : new Date(t).toLocaleString("de-DE", { day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" });
+  }
+  function cloudLine() {
+    var c = cfg();
+    if (!c.token) return "<div class='cl' data-a='cloud'>☁ Nur auf diesem Gerät · <u>Cloud-Sync einrichten</u></div>";
+    if (sync.busy) return "<div class='cl' data-a='cloud'>☁ Synchronisiere …</div>";
+    if (sync.error) return "<div class='cl err' data-a='cloud'>☁ " + esc(sync.error) + "</div>";
+    return "<div class='cl ok' data-a='cloud'>☁ Mit GitHub synchronisiert · " + ago(sync.last || c.last) + "</div>";
+  }
+  function cloudView() {
+    var c = cfg();
+    var h = "<div class='hd'><h2>☁ Cloud-Sync</h2><button class='b' data-a='back' aria-label='Zurück'>✕</button></div>";
+    if (!c.token) {
+      h += "<p class='txt'>Damit der Kalender auf allen Handys, Tablets und Computern gleich ist, wird er in einem <b>privaten Gist</b> in deinem GitHub-Konto gespeichert. Das musst du <b>pro Gerät einmal</b> machen – danach gilt es für alle Apps auf diesem Gerät.</p>";
+      h += "<ol class='txt'><li><a href='https://github.com/settings/tokens/new?scopes=gist&amp;description=Gemeinsamer%20Kalender' target='_blank' rel='noopener'>Diesen Link öffnen</a> (bei GitHub anmelden).</li>" +
+        "<li>Bei <b>Expiration</b> „No expiration“ wählen. Das Häkchen bei <b>gist</b> ist schon gesetzt – sonst nichts anhaken.</li>" +
+        "<li>Unten auf <b>Generate token</b> tippen und den Code (beginnt mit <code>ghp_</code>) kopieren.</li>" +
+        "<li>Hier einfügen und verbinden. Auf weiteren Geräten denselben Code verwenden.</li></ol>";
+      h += "<label>Token</label><input name='token' type='password' autocomplete='off' placeholder='ghp_…'>";
+      if (sync.error) h += "<div class='cl err'>" + esc(sync.error) + "</div>";
+      h += "<div class='act'><span class='sp'></span><button class='b' data-a='back'>Abbrechen</button><button class='b p' data-a='connect'" + (sync.busy ? " disabled" : "") + ">" + (sync.busy ? "Verbinde …" : "Verbinden") + "</button></div>";
+    } else {
+      h += "<p class='txt'>Verbunden als <b>" + esc(c.user || "?") + "</b>. Änderungen werden sofort hochgeladen; Änderungen von anderen Geräten kommen spätestens nach 30 Sekunden an.</p>";
+      h += cloudLine();
+      if (c.gist) h += "<p class='txt'><a href='https://gist.github.com/" + esc(c.gist) + "' target='_blank' rel='noopener'>Gist auf GitHub ansehen</a></p>";
+      h += "<div class='act'><button class='b d' data-a='disconnect'>Trennen</button><span class='sp'></span><button class='b p' data-a='syncnow'>Jetzt synchronisieren</button></div>";
+    }
+    return h;
+  }
+  function connect(token) {
+    token = token.trim();
+    if (!token) return;
+    sync.busy = true; sync.error = ""; render();
+    gh("/user", null, token).then(function (u) {
+      setCfg({ token: token, user: u.login });
+      sync.busy = false;
+      return syncNow();
+    }).catch(function (e) {
+      sync.busy = false;
+      sync.error = (e && e.message && !/fetch|network/i.test(e.message)) ? e.message : "Keine Verbindung zu GitHub.";
+      render();
+    });
   }
 
   function form(e) {
@@ -13088,8 +13247,15 @@ window.APP5 = {
     else if (a === "next") state.month = new Date(m.getFullYear(), m.getMonth() + 1, 1);
     else if (a === "today") { var t = new Date(); state.sel = iso(t); state.month = new Date(t.getFullYear(), t.getMonth(), 1); }
     else if (a === "close") return close();
+    else if (a === "cloud") { state.cloud = true; state.edit = null; }
+    else if (a === "connect") return connect(box.querySelector("[name=token]").value);
+    else if (a === "syncnow") return syncNow();
+    else if (a === "disconnect") {
+      if (!confirm("Cloud-Sync auf diesem Gerät beenden? Die Termine bleiben hier und im Gist erhalten.")) return;
+      setCfg(null); sync.error = ""; sync.last = 0;
+    }
     else if (a === "new") state.edit = { date: state.sel, app: APP };
-    else if (a === "back") state.edit = null;
+    else if (a === "back") { if (state.cloud) state.cloud = false; else state.edit = null; }
     else if (a === "save") {
       var v = {};
       ["title", "date", "time", "end", "note", "color"].forEach(function (k) { v[k] = box.querySelector("[name=" + k + "]").value.trim(); });
@@ -13118,15 +13284,7 @@ window.APP5 = {
       file.text().then(function (txt) {
         var src = JSON.parse(txt);
         if (!src || !Array.isArray(src.events)) throw new Error("format");
-        var added = 0;
-        mutate(function (d) {
-          src.events.forEach(function (e) {
-            if (!e || !e.id || !/^\d{4}-\d{2}-\d{2}$/.test(e.date)) return;
-            var i = d.events.findIndex(function (x) { return x.id === e.id; });
-            if (i < 0) { d.events.push(e); added++; }
-            else if ((e.changed || 0) > (d.events[i].changed || 0)) d.events[i] = e;
-          });
-        });
+        var added = mutate(function (d) { return mergeInto(d, src.events).added; });
         alert("Import fertig: " + added + " neue Termine.");
       }).catch(function () { alert("Diese Datei ist keine gültige Kalender-Sicherung."); });
     };
