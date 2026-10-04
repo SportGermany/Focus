@@ -1124,8 +1124,72 @@
   }
 </style>
 <!-- verbund-design:start -->
-<style id="sg-design">/* Gemeinsames Design aller SportGermany-Apps: gleiche Grundfarben und Schrift, eigene Akzentfarbe je App */
-html:root{--bg:#141412;--panel:#1c1b19;--panel-2:#252421;--panel-3:#2e2c29;--line:#353330;--text:#ebe9e4;--text-dim:#a29e95;--text-faint:#6e6a62;}html[data-theme="light"]{--bg:#f3f1ec;--panel:#ffffff;--panel-2:#ebe8e1;--panel-3:#e1ddd5;--line:#dad5cb;--text:#1d1c19;--text-dim:#67635b;--text-faint:#98938a}body,button,input,select,textarea{font-family:'Segoe UI Variable Text','Segoe UI',Roboto,'Helvetica Neue',system-ui,-apple-system,sans-serif}</style>
+<script data-design="panel">
+/* SportGermany-Design: 10 dunkle Farbwelten für alle Apps. Läuft im <head>, damit beim Laden nichts aufblitzt.
+ * Die Wahl liegt im gemeinsamen Speicher (gilt sofort für alle Apps) und wird vom Verbund-Sync mit abgeglichen.
+ * data-design nennt, welche CSS-Variablen die jeweilige App benutzt. */
+(function () {
+  "use strict";
+  if (window.SGTheme) return;
+  var KEY = "sg-design";
+  var THEMES = [
+    { id: "graphit", name: "Graphit", info: "Warmes Anthrazit, Bernstein", bg: "#141412", s1: "#1c1b19", s2: "#252421", s3: "#2e2c29", line: "#353330", ink: "#ebe9e4", muted: "#a29e95", faint: "#6e6a62", acc: "#e8a55a" },
+    { id: "mitternacht", name: "Mitternacht", info: "Tiefes Nachtblau", bg: "#0d1117", s1: "#151b23", s2: "#1c2430", s3: "#243040", line: "#2a3646", ink: "#e6edf3", muted: "#9aa7b4", faint: "#5d6b7a", acc: "#6ea8fe" },
+    { id: "wald", name: "Wald", info: "Moos und Tannengrün", bg: "#0f1411", s1: "#161d18", s2: "#1d2620", s3: "#253028", line: "#2c382f", ink: "#e4ece5", muted: "#9cab9f", faint: "#627066", acc: "#7cc49a" },
+    { id: "espresso", name: "Espresso", info: "Dunkle Röstung, Karamell", bg: "#15110e", s1: "#1e1814", s2: "#28201b", s3: "#322822", line: "#3a2f28", ink: "#f0e7df", muted: "#b3a497", faint: "#7a6c60", acc: "#d4915c" },
+    { id: "schiefer", name: "Schiefer", info: "Kühles Grau, Eisblau", bg: "#121417", s1: "#1a1d21", s2: "#22262b", s3: "#2b3036", line: "#33383f", ink: "#e8eaed", muted: "#a0a7b0", faint: "#69707a", acc: "#8ab4c9" },
+    { id: "aubergine", name: "Aubergine", info: "Gedämpftes Pflaume, Flieder", bg: "#141016", s1: "#1c1720", s2: "#251e2a", s3: "#2e2634", line: "#372d3d", ink: "#ece6ef", muted: "#ab9fb2", faint: "#74687b", acc: "#c99ad6" },
+    { id: "tiefsee", name: "Tiefsee", info: "Petrol und Türkis", bg: "#0b1414", s1: "#111c1c", s2: "#172525", s3: "#1e2f2f", line: "#243838", ink: "#e0eeec", muted: "#93aeab", faint: "#5b7471", acc: "#4fc1b0" },
+    { id: "oxid", name: "Oxid", info: "Kohle mit Terrakotta", bg: "#131110", s1: "#1c1917", s2: "#25211e", s3: "#2e2925", line: "#36302b", ink: "#efe9e4", muted: "#ab9f95", faint: "#75695f", acc: "#e07a52" },
+    { id: "oled", name: "OLED Schwarz", info: "Reines Schwarz, Signalgelb – spart Akku", bg: "#000000", s1: "#0d0d0d", s2: "#171717", s3: "#212121", line: "#2a2a2a", ink: "#f2f2f2", muted: "#a3a3a3", faint: "#6b6b6b", acc: "#ffcc4d" },
+    { id: "bordeaux", name: "Bordeaux", info: "Weinrot und Rosé", bg: "#140f10", s1: "#1d1517", s2: "#271c1f", s3: "#312327", line: "#3a2a2e", ink: "#f0e6e7", muted: "#b39fa3", faint: "#7b676b", acc: "#e0707e" }
+  ];
+  var FONT = "'Segoe UI Variable Text','Segoe UI',Roboto,'Helvetica Neue',system-ui,-apple-system,sans-serif";
+  // App-Variable -> Farbrolle der Farbwelt
+  var MAPS = {
+    panel: { bg: "bg", panel: "s1", "panel-2": "s2", "panel-3": "s3", line: "line", text: "ink", "text-dim": "muted", "text-faint": "faint" },
+    bibel: { bg: "bg", surface: "s1", surface2: "s2", ink: "ink", muted: "muted", accent: "acc", "accent-bright": "acc" },
+    rodeln: { bg: "bg", surface: "s1", surface2: "s2", ink: "ink", muted: "muted", line: "line", accent: "acc", "accent-soft": "accsoft", "accent-ink": "accfg", mat: "s2", floor: "s3", far: "faint" },
+    lernplan: { bg: "bg", surface: "s1", surface2: "s2", text: "ink", muted: "muted", line: "line", weekend: "bg", grid: "line", accent: "acc", "accent-soft": "accsoft" },
+    puls: { bg: "bg", surface: "s1", ink: "ink", muted: "muted", line: "line", breath: "acc", "breath-soft": "accsoft" },
+    kalender: { bg: "bg", s1: "s1", s2: "s2", s3: "s3", line: "line", line2: "s2", ink: "ink", muted: "muted", faint: "faint", acc: "acc", accfg: "accfg" }
+  };
+  var FONTVARS = { rodeln: ["fd", "fb"], puls: ["font-display", "font-body"], bibel: ["sans"] };
+  var script = document.currentScript;
+  var MODE = (script && script.getAttribute("data-design")) || "panel";
+
+  function rgba(hex, a) { var n = parseInt(hex.slice(1), 16); return "rgba(" + (n >> 16) + "," + (n >> 8 & 255) + "," + (n & 255) + "," + a + ")"; }
+  function get(id) { return THEMES.find(function (t) { return t.id === id; }) || THEMES[0]; }
+  function currentId() { try { return localStorage.getItem(KEY) || "graphit"; } catch (e) { return "graphit"; } }
+  function css(t) {
+    var roles = Object.assign({ accsoft: rgba(t.acc, .16), accfg: "#14120f" }, t), map = MAPS[MODE] || MAPS.panel;
+    var vars = Object.keys(map).map(function (k) { return "--" + k + ":" + roles[map[k]]; }).join(";");
+    vars += ";" + (FONTVARS[MODE] || []).map(function (v) { return "--" + v + ":" + FONT; }).join(";") + ";--sg-acc:" + t.acc + ";color-scheme:dark";
+    // :not(#sg) hebt die Regel über alle Hell/Dunkel-Regeln der Apps – alle Apps bleiben dunkel.
+    // In der Bibel bleiben Sepia- und Nachtmodus als Lesemodi erhalten.
+    var sel = MODE === "bibel" ? "html:root:not(#sg):not([data-theme=\"sepia\"]):not([data-theme=\"night\"])" : "html:root:not(#sg)";
+    return sel + "{" + vars + "}html:not(#sg) body{background-color:var(--bg)}body,button,input,select,textarea{font-family:" + FONT + "}";
+  }
+  function apply(id) {
+    var t = get(id || currentId());
+    var st = document.getElementById("sg-theme");
+    if (!st) { st = document.createElement("style"); st.id = "sg-theme"; (document.head || document.documentElement).appendChild(st); }
+    st.textContent = css(t);
+    document.querySelectorAll("meta[name=theme-color]").forEach(function (m) { m.setAttribute("content", t.bg); m.removeAttribute("media"); });
+    window.dispatchEvent(new CustomEvent("sg-theme", { detail: t }));
+    return t;
+  }
+  window.SGTheme = {
+    list: THEMES,
+    current: function () { return get(currentId()); },
+    set: function (id) { try { localStorage.setItem(KEY, id); } catch (e) {} apply(id); window.dispatchEvent(new CustomEvent("sg-theme-set", { detail: id })); }
+  };
+  // ?design=… in der Adresse: zum Ausprobieren ohne zu speichern
+  var q = /[?&]design=([a-z]+)/.exec(location.search);
+  apply(q ? q[1] : null);
+  window.addEventListener("storage", function (e) { if (e.key === KEY || e.key === null) apply(); });
+})();
+</script>
 <!-- verbund-design:end -->
 </head>
 <body>
@@ -12936,7 +13000,8 @@ window.APP5 = {
     add: function (ev) {
       return mutate(function (d) {
         var n = { id: uid(), title: String(ev.title || "Termin"), date: ev.date, time: ev.time || "", end: ev.end || "",
-          note: ev.note || "", color: ev.color || "", app: ev.app || APP, created: Date.now(), changed: Date.now() };
+          note: ev.note || "", color: ev.color || "", app: ev.app || APP, created: Date.now(), changed: Date.now(),
+          remind: ev.remind === "" || ev.remind == null ? null : +ev.remind };
         d.events.push(n); return n;
       });
     },
@@ -13057,8 +13122,9 @@ window.APP5 = {
 
   // Gleicht die Daten aller Verbund-Apps ab, nicht nur der gerade offenen –
   // so landen auch Änderungen aus einer App, die lange nicht offen war, in der Cloud.
+  var EXTRA = [{ id: "einstellungen", name: "Einstellungen", keys: ["sg-design"], lww: true }];
   function syncApps(g, files) {
-    APPS.forEach(function (app) {
+    APPS.concat(EXTRA).forEach(function (app) {
       if (!app.keys.length) return;
       var local = snapshot(app), h = hash(local), m = meta()[app.id] || {};
       var remote = readJSON(g.files && g.files["app-" + app.id + ".json"]);
@@ -13068,9 +13134,10 @@ window.APP5 = {
         if (app.id === ME.id && Date.now() - sync.started > 5000) pending[app.id] = { remote: remote, kind: "update" };
         else applyRemote(app, remote);
         if (app.id === ME.id && !pending[app.id]) reloadSoon();
-      } else if (remoteChanged && localChanged) {
+        if (app.id === "einstellungen" && window.SGTheme) window.SGTheme.set(localStorage.getItem("sg-design") || "graphit");
+      } else if (remoteChanged && localChanged && !app.lww) {
         pending[app.id] = { remote: remote, kind: "conflict" };
-      } else if (localChanged || (!remote && Object.keys(local).length)) {
+      } else if (localChanged || (!remote && Object.keys(local).length)) { // bei lww: eigene neuere Wahl gewinnt
         var out = { changed: Date.now(), device: deviceName(), data: local };
         files["app-" + app.id + ".json"] = { content: JSON.stringify(out) };
         setMeta(app.id, { hash: h, remote: out.changed });
@@ -13138,6 +13205,49 @@ window.APP5 = {
   window.addEventListener("online", function () { syncNow(); });
   setTimeout(syncNow, 800);
 
+  /* ---------- Erinnerungen ----------
+   * remind = Minuten vor Beginn (ganztägig: bezogen auf 8 Uhr). Solange irgendeine App offen ist,
+   * wird alle 30 Sekunden geprüft. Was schon gemeldet wurde, steht im gemeinsamen Speicher –
+   * so meldet sich jeder Termin nur einmal, egal wie viele Apps offen sind. */
+  var FIRED_KEY = "sg-reminders-fired";
+  var REMIND = [["", "Keine"], ["0", "Zu Beginn"], ["5", "5 Min. vorher"], ["10", "10 Min. vorher"], ["15", "15 Min. vorher"], ["30", "30 Min. vorher"],
+    ["60", "1 Std. vorher"], ["120", "2 Std. vorher"], ["1440", "1 Tag vorher"]];
+  function notifyOk() { return "Notification" in window && Notification.permission === "granted"; }
+  function askNotify() {
+    if (!("Notification" in window) || Notification.permission !== "default") return Promise.resolve(notifyOk());
+    return Promise.resolve(Notification.requestPermission()).then(function () { render(); return notifyOk(); });
+  }
+  function show(title, body, tag) {
+    var opt = { body: body, tag: tag, icon: location.origin + "/Kalender/icon-192.png", data: { url: location.origin + "/Kalender/" } };
+    var fallback = function () { try { new Notification(title, opt); } catch (e) {} };
+    if (navigator.serviceWorker && navigator.serviceWorker.controller) navigator.serviceWorker.ready.then(function (r) { return r.showNotification(title, opt); }).catch(fallback);
+    else fallback();
+  }
+  function checkReminders() {
+    if (!notifyOk()) return;
+    var now = Date.now(), fired;
+    try { fired = JSON.parse(localStorage.getItem(FIRED_KEY) || "{}"); } catch (e) { fired = {}; }
+    var t = iso(new Date()), list = occurrences(iso(new Date(now - 864e5)), iso(new Date(now + 2 * 864e5)));
+    list.forEach(function (e) {
+      if (e.remind == null || e.remind === "") return;
+      var p = e.date.split("-"), hm = (e.time || "08:00").split(":");
+      var start = new Date(+p[0], +p[1] - 1, +p[2], +hm[0], +hm[1]).getTime(), at = start - e.remind * 60000, key = e.id + "@" + e.date;
+      // nur melden, wenn der Zeitpunkt erreicht ist, aber höchstens 2 Stunden zu spät
+      if (fired[key] || now < at || now > at + 2 * 3600000) return;
+      fired[key] = now;
+      var when = e.date === t ? "Heute" : "Morgen";
+      show(e.title, (e.time ? when + " um " + e.time + " Uhr" + (e.end ? " bis " + e.end : "") : when + ", ganztägig") + " · " + e.app, key);
+    });
+    Object.keys(fired).forEach(function (k) { if (now - fired[k] > 4 * 864e5) delete fired[k]; });
+    try { localStorage.setItem(FIRED_KEY, JSON.stringify(fired)); } catch (e) {}
+  }
+  setInterval(checkReminders, 30000);
+  setTimeout(checkReminders, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) checkReminders(); });
+  api.remindOptions = REMIND;
+  api.askNotify = askNotify;
+  api.notifyState = function () { return "Notification" in window ? Notification.permission : "unsupported"; };
+
   /* ---------- Hilfen ---------- */
   function pad(n) { return (n < 10 ? "0" : "") + n; }
   function iso(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
@@ -13162,10 +13272,10 @@ window.APP5 = {
   }
   function appUrl(app) { return location.origin + "/" + app.path + "/"; }
   // Hell oder dunkel? Richtet sich nach dem tatsächlichen Hintergrund der App, damit das Fenster passt.
-  function isDark() {
-    var c = getComputedStyle(document.body).backgroundColor.match(/\d+(\.\d+)?/g);
-    if (!c || (c.length > 3 && +c[3] === 0)) return matchMedia("(prefers-color-scheme: dark)").matches;
-    return (0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]) < 128;
+  function isDark() { return true; } // alle Apps laufen im Dunkelmodus
+  function themeVars() {
+    var t = window.SGTheme ? window.SGTheme.current() : { s1: "#1c1b19", s2: "#252421", s3: "#2e2c29", line: "#353330", ink: "#ebe9e4", muted: "#a29e95", acc: "#e8a55a" };
+    return "--bg:" + t.s1 + ";--s1:" + t.s2 + ";--s2:" + t.s3 + ";--line:" + t.line + ";--fg:" + t.ink + ";--mut:" + t.muted + ";--acc:" + t.acc + ";--accfg:#14120f";
   }
   var ICON = "<svg viewBox='0 0 24 24' width='22' height='22' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round'><rect x='3.5' y='5' width='17' height='15.5' rx='2.5'/><path d='M3.5 9.5h17M8 3v4M16 3v4'/><path d='M7.5 13.5h2M11 13.5h2M14.5 13.5h2M7.5 17h2M11 17h2'/></svg>";
 
@@ -13221,6 +13331,10 @@ window.APP5 = {
     ".task{display:flex;gap:8px;align-items:center;padding:7px 2px;font-size:14px;cursor:pointer}.task input{width:auto;margin:0}.task em{color:#c0303f;font-style:normal;font-size:12px}",
     ".qt{margin-top:4px;font-size:14px;padding:8px 10px}",
     "a.b{text-decoration:none;display:inline-block}a.big{font-weight:600}",
+    ".themes{display:grid;grid-template-columns:1fr 1fr;gap:8px}",
+    ".th{text-align:left;border:2px solid;border-radius:12px;padding:10px;cursor:pointer;display:flex;flex-direction:column;gap:3px}",
+    ".th b{font-size:14px}.th small{font-size:12px;line-height:1.3}.th.on{box-shadow:0 0 0 1px var(--acc)}",
+    ".pv{display:flex;gap:4px;margin-bottom:4px}.pv i{width:18px;height:18px;border-radius:5px;display:block}.pv i:last-child{border-radius:50%}",
     ".apps{display:grid;grid-template-columns:1fr 1fr;gap:8px}",
     ".app{display:flex;gap:10px;align-items:center;padding:11px;border-radius:12px;background:var(--s1);border:1px solid var(--line);color:var(--fg);text-decoration:none}",
     ".app.me{border-color:var(--fg)}",
@@ -13294,7 +13408,7 @@ window.APP5 = {
 
   function render(bg) {
     if (!root) return;
-    root.querySelector(".v").classList.toggle("dark", isDark());
+    var vv = root.querySelector(".v"); vv.classList.add("dark"); vv.setAttribute("style", themeVars());
     var today = iso(new Date());
     var all = occurrences(iso(new Date(Date.now() - 400 * 864e5)), iso(new Date(Date.now() + 800 * 864e5)));
     var dot = root.querySelector(".fab .dot");
@@ -13310,10 +13424,10 @@ window.APP5 = {
     if (state.edit) h += form(state.edit);
     else {
       h += "<div class='top'><div class='tabs' role='tablist'>" +
-        [["cal", "Kalender"], ["apps", "Apps"], ["sync", "Sync"]].map(function (t) {
+        [["cal", "Kalender"], ["apps", "Apps"], ["design", "Design"], ["sync", "Sync"]].map(function (t) {
           return "<button role='tab' data-tab='" + t[0] + "' class='" + (state.tab === t[0] ? "on" : "") + "'>" + t[1] + "</button>";
         }).join("") + "</div><button class='x' data-a='close' aria-label='Schließen'>✕</button></div>";
-      h += state.tab === "apps" ? appsView() : state.tab === "sync" ? cloudView() : month(evs, today);
+      h += state.tab === "apps" ? appsView() : state.tab === "sync" ? cloudView() : state.tab === "design" ? designView() : month(evs, today);
     }
     h += "</div></div>";
     box.innerHTML = h;
@@ -13364,6 +13478,7 @@ window.APP5 = {
     var seen = {}; // Serien nur mit dem nächsten Termin zeigen
     var upcoming = evs.filter(function (e) { if (e.date <= state.sel || seen[e.id]) return false; seen[e.id] = 1; return true; }).slice(0, 5);
     if (upcoming.length) h += "<div class='sec'><h3>Danach</h3>" + upcoming.map(function (e) { return item(e, true); }).join("") + "</div>";
+    if ("Notification" in window && Notification.permission === "default") h += "<div class='cl' data-a='notify'>Erinnerungen als Benachrichtigung erlauben</div>";
     h += "<div class='tools'><a class='b big' href='" + esc(appUrl(APPS[0])) + "'>Großer Kalender</a><button class='b' data-a='export'>Sichern</button><button class='b' data-a='import'>Importieren</button><button class='b' data-a='ics'>.ics-Export</button></div>";
     return h;
   }
@@ -13388,6 +13503,16 @@ window.APP5 = {
     return h;
   }
 
+  function designView() {
+    if (!window.SGTheme) return "<p class='txt'>Design nicht verfügbar.</p>";
+    var cur = window.SGTheme.current().id;
+    return "<p class='txt m'>Gilt sofort für alle Apps auf diesem Gerät – und mit Sync auch auf deinen anderen Geräten.</p><div class='themes'>" +
+      window.SGTheme.list.map(function (t) {
+        return "<button class='th" + (t.id === cur ? " on" : "") + "' data-theme='" + t.id + "' style='background:" + t.bg + ";color:" + t.ink + ";border-color:" + (t.id === cur ? t.acc : t.line) + "'>" +
+          "<span class='pv'><i style='background:" + t.s1 + "'></i><i style='background:" + t.s2 + "'></i><i style='background:" + t.s3 + "'></i><i style='background:" + t.acc + "'></i></span>" +
+          "<b>" + esc(t.name) + "</b><small style='color:" + t.muted + "'>" + esc(t.info) + "</small></button>";
+      }).join("") + "</div>";
+  }
   function ago(t) {
     if (!t) return "noch nie";
     var m = Math.round((Date.now() - t) / 60000);
@@ -13445,6 +13570,8 @@ window.APP5 = {
     h += "<label>Datum</label><input type='date' name='date' value='" + esc(e.date) + "'>";
     h += "<div class='row'><div><label>Von (optional)</label><input type='time' name='time' value='" + esc(e.time || "") + "'></div>" +
       "<div><label>Bis (optional)</label><input type='time' name='end' value='" + esc(e.end || "") + "'></div></div>";
+    h += "<label>Erinnerung</label><select name='remind'>" + REMIND.map(function (r) {
+      return "<option value='" + r[0] + "'" + (String(e.remind == null ? "" : e.remind) === r[0] ? " selected" : "") + ">" + r[1] + "</option>"; }).join("") + "</select>";
     h += "<label>Notiz</label><textarea name='note' maxlength='1000'>" + esc(e.note || "") + "</textarea>";
     h += "<label>Farbe</label><select name='color'><option value=''>Farbe der App</option>" +
       COLORS.map(function (c, i) { return "<option value='" + c + "'" + (e.color === c ? " selected" : "") + ">" + CNAMES[i] + "</option>"; }).join("") + "</select>";
@@ -13456,9 +13583,10 @@ window.APP5 = {
   function bind(box) {
     box.querySelector(".wrap").addEventListener("click", function (ev) {
       if (ev.target.classList.contains("wrap")) { close(); return; }
-      var t = ev.target.closest("[data-a],[data-day],[data-id],[data-tab]");
+      var t = ev.target.closest("[data-a],[data-day],[data-id],[data-tab],[data-theme]");
       if (!t) return;
       if (t.dataset.tab) { state.tab = t.dataset.tab; render(); return; }
+      if (t.dataset.theme && window.SGTheme) { window.SGTheme.set(t.dataset.theme); render(); return; }
       if (t.dataset.day) { state.sel = t.dataset.day; render(); return; }
       if (t.dataset.id && !t.dataset.a) {
         var e = live().find(function (x) { return x.id === t.dataset.id; }); // bei Serien: die ganze Serie
@@ -13489,6 +13617,7 @@ window.APP5 = {
     else if (a === "close") return close();
     else if (a === "connect") return connect(box.querySelector("[name=token]").value);
     else if (a === "syncnow") return syncNow();
+    else if (a === "notify") return askNotify();
     else if (a === "disconnect") {
       if (!confirm("Sync auf diesem Gerät beenden? Alle Daten bleiben hier und auf GitHub erhalten.")) return;
       setCfg(null); sync.error = ""; sync.last = 0;
@@ -13497,7 +13626,9 @@ window.APP5 = {
     else if (a === "back") state.edit = null;
     else if (a === "save") {
       var v = {};
-      ["title", "date", "time", "end", "note", "color"].forEach(function (k) { v[k] = box.querySelector("[name=" + k + "]").value.trim(); });
+      ["title", "date", "time", "end", "note", "color", "remind"].forEach(function (k) { v[k] = box.querySelector("[name=" + k + "]").value.trim(); });
+      v.remind = v.remind === "" ? null : +v.remind;
+      if (v.remind != null) askNotify();
       if (!v.title) { box.querySelector("[name=title]").focus(); return; }
       if (!/^\d{4}-\d{2}-\d{2}$/.test(v.date)) { box.querySelector("[name=date]").focus(); return; }
       if (state.edit.id) api.update(state.edit.id, v); else api.add(v);
@@ -13543,13 +13674,18 @@ window.APP5 = {
         var n = parse(e.date); n.setDate(n.getDate() + 1);
         out.push("DTSTART;VALUE=DATE:" + e.date.replace(/-/g, ""), "DTEND;VALUE=DATE:" + iso(n).replace(/-/g, ""));
       }
-      out.push("SUMMARY:" + f(e.title), "DESCRIPTION:" + f((e.note ? e.note + "\n" : "") + "aus " + e.app), "END:VEVENT");
+      out.push("SUMMARY:" + f(e.title), "DESCRIPTION:" + f((e.note ? e.note + "\n" : "") + "aus " + e.app));
+      if (e.rep && e.rep.f) out.push("RRULE:FREQ=" + { d: "DAILY", w: "WEEKLY", "2w": "WEEKLY;INTERVAL=2", m: "MONTHLY", y: "YEARLY" }[e.rep.f] + (e.rep.until ? ";UNTIL=" + e.rep.until.replace(/-/g, "") : ""));
+      if (e.remind != null) out.push("BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + f(e.title), "TRIGGER:-PT" + (+e.remind) + "M", "END:VALARM");
+      out.push("END:VEVENT");
     });
     out.push("END:VCALENDAR");
     return out.join("\r\n");
   }
 
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && state.open) close(); });
+  window.addEventListener("sg-theme", function () { if (root) render(true); });
+  window.addEventListener("sg-theme-set", function () { schedulePush(); });
   if (document.body) mount(); else document.addEventListener("DOMContentLoaded", mount);
 })();
 </script>
