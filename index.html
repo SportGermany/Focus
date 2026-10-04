@@ -12791,5 +12791,371 @@ window.APP5 = {
 };
 })();
 </script>
+<!-- gemeinsamer-kalender:start -->
+<script data-app="Focus">
+/* Gemeinsamer Kalender für alle SportGermany-Apps (v1)
+ * Alle Apps liegen auf sportgermany.github.io und teilen sich deshalb denselben
+ * localStorage. Termine werden unter einem gemeinsamen Schlüssel gespeichert und
+ * in allen offenen Apps sofort aktualisiert. Diesen Block in jeder App identisch halten.
+ * API für die Apps: window.SharedCalendar.{open, list, add, update, remove, onChange}
+ */
+(function () {
+  "use strict";
+  if (window.SharedCalendar) return;
+  var KEY = "sg-shared-calendar-v1";
+  var POS_KEY = "sg-shared-calendar-btn";
+  var script = document.currentScript;
+  var APP = (script && script.getAttribute("data-app")) || document.title || "App";
+  var MON = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+  var WD = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+  var COLORS = ["#2f6fed", "#1aa179", "#e0892b", "#d64545", "#8e5bd6", "#c2418d", "#3a9fbf", "#7a8a2a"];
+  var listeners = [];
+  var chan = null;
+  try { chan = new BroadcastChannel(KEY); } catch (e) {}
+
+  /* ---------- Speicher ---------- */
+  function load() {
+    try {
+      var d = JSON.parse(localStorage.getItem(KEY) || "null");
+      if (d && Array.isArray(d.events)) return d;
+    } catch (e) {}
+    return { v: 1, events: [] };
+  }
+  function save(d) {
+    d.updated = Date.now();
+    try { localStorage.setItem(KEY, JSON.stringify(d)); }
+    catch (e) { alert("Kalender konnte nicht gespeichert werden (Speicher voll?)."); return; }
+    if (chan) try { chan.postMessage("changed"); } catch (e) {}
+    emit();
+  }
+  // Jede Änderung liest zuerst den aktuellen Stand, damit keine App die Termine einer anderen überschreibt.
+  function mutate(fn) { var d = load(); var r = fn(d); save(d); return r; }
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+  function live() {
+    return load().events.filter(function (e) { return !e.deleted; }).sort(function (a, b) {
+      return (a.date + (a.time || "")).localeCompare(b.date + (b.time || ""));
+    });
+  }
+  function emit() {
+    var ev = live();
+    listeners.forEach(function (f) { try { f(ev); } catch (e) {} });
+    if (root) render();
+  }
+  window.addEventListener("storage", function (e) { if (e.key === KEY || e.key === null) emit(); });
+  if (chan) chan.onmessage = emit;
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) emit(); });
+
+  var api = {
+    app: APP,
+    list: function (from, to) {
+      return live().filter(function (e) { return (!from || e.date >= from) && (!to || e.date <= to); });
+    },
+    add: function (ev) {
+      return mutate(function (d) {
+        var n = { id: uid(), title: String(ev.title || "Termin"), date: ev.date, time: ev.time || "", end: ev.end || "",
+          note: ev.note || "", color: ev.color || "", app: ev.app || APP, created: Date.now(), changed: Date.now() };
+        d.events.push(n); return n;
+      });
+    },
+    update: function (id, patch) {
+      return mutate(function (d) {
+        var e = d.events.find(function (x) { return x.id === id; });
+        if (!e) return null;
+        Object.keys(patch).forEach(function (k) { if (k !== "id") e[k] = patch[k]; });
+        e.changed = Date.now(); return e;
+      });
+    },
+    remove: function (id) {
+      // Gelöschte Termine bleiben als Markierung erhalten, damit ein Import sie nicht wiederbelebt.
+      return mutate(function (d) {
+        var e = d.events.find(function (x) { return x.id === id; });
+        if (e) { e.deleted = true; e.changed = Date.now(); }
+      });
+    },
+    onChange: function (f) { listeners.push(f); return function () { listeners = listeners.filter(function (x) { return x !== f; }); }; },
+    open: function (date) { openPanel(date); }
+  };
+  window.SharedCalendar = api;
+
+  /* ---------- Hilfen ---------- */
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function iso(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function parse(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function appColor(name) {
+    var h = 0; for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+    return COLORS[h % COLORS.length];
+  }
+  function colorOf(e) { return e.color || appColor(e.app || ""); }
+  function longDate(s) {
+    var d = parse(s);
+    return ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"][d.getDay()] + ", " + d.getDate() + ". " + MON[d.getMonth()] + " " + d.getFullYear();
+  }
+  function download(name, type, text) {
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([text], { type: type }));
+    a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+
+  /* ---------- Oberfläche (Shadow DOM, damit sich die Styles der Apps nicht gegenseitig stören) ---------- */
+  var host, root, state = { month: null, sel: null, edit: null, filter: false };
+  var CSS = [
+    ":host{all:initial}",
+    "*{box-sizing:border-box;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}",
+    ".fab{position:fixed;z-index:2147483000;width:48px;height:48px;border-radius:50%;border:0;cursor:pointer;",
+    "background:#2f6fed;color:#fff;font-size:22px;box-shadow:0 4px 14px rgba(0,0,0,.3);touch-action:none;display:flex;align-items:center;justify-content:center}",
+    ".fab .dot{position:absolute;top:2px;right:2px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:#d64545;font-size:11px;line-height:18px;font-weight:700}",
+    ".wrap{position:fixed;inset:0;z-index:2147483001;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}",
+    "@media(min-width:700px){.wrap{align-items:center}}",
+    ".panel{--bg:#fff;--fg:#16181d;--mut:#6b7280;--line:#e5e7eb;--soft:#f3f4f6;--acc:#2f6fed;",
+    "background:var(--bg);color:var(--fg);width:100%;max-width:520px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;",
+    "padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));font-size:15px;line-height:1.35}",
+    "@media(min-width:700px){.panel{border-radius:18px}}",
+    "@media(prefers-color-scheme:dark){.panel{--bg:#1b1d22;--fg:#eceef0;--mut:#9aa0a8;--line:#30333a;--soft:#262930}}",
+    ".hd{display:flex;align-items:center;gap:8px;margin-bottom:10px}",
+    ".hd h2{flex:1;margin:0;font-size:18px}",
+    "button.b{border:1px solid var(--line);background:var(--soft);color:var(--fg);border-radius:10px;padding:7px 11px;font-size:14px;cursor:pointer}",
+    "button.p{background:var(--acc);border-color:var(--acc);color:#fff}",
+    "button.d{color:#d64545}",
+    ".grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}",
+    ".wd{text-align:center;font-size:12px;color:var(--mut);padding:2px 0}",
+    ".c{min-height:44px;border-radius:8px;padding:3px;cursor:pointer;background:var(--soft);border:2px solid transparent;display:flex;flex-direction:column;align-items:center}",
+    ".c.o{opacity:.35}.c.t .n{background:var(--acc);color:#fff;border-radius:50%}.c.s{border-color:var(--acc)}",
+    ".n{font-size:13px;width:22px;height:22px;line-height:22px;text-align:center}",
+    ".ds{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;margin-top:2px}.ds i{width:6px;height:6px;border-radius:50%}",
+    ".sec{margin-top:14px}.sec h3{font-size:15px;margin:0 0 8px}",
+    ".ev{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-radius:10px;background:var(--soft);margin-bottom:6px;cursor:pointer}",
+    ".bar{width:4px;align-self:stretch;border-radius:2px}",
+    ".ev .t{font-weight:600}.ev .m{font-size:12px;color:var(--mut)}",
+    ".empty{color:var(--mut);font-size:14px;padding:6px 0}",
+    "label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}",
+    "input,textarea,select{width:100%;padding:9px 10px;border-radius:10px;border:1px solid var(--line);background:var(--soft);color:var(--fg);font-size:15px}",
+    "textarea{min-height:70px;resize:vertical}",
+    ".row{display:flex;gap:8px}.row>*{flex:1}",
+    ".act{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}.act .sp{flex:1}",
+    ".tools{display:flex;gap:6px;flex-wrap:wrap;margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}",
+    ".chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mut);margin:8px 0 0}.chk input{width:auto}"
+  ].join("");
+
+  function mount() {
+    if (host) return;
+    host = document.createElement("div");
+    host.id = "sg-shared-calendar";
+    root = host.attachShadow({ mode: "open" });
+    var st = document.createElement("style"); st.textContent = CSS; root.appendChild(st);
+    var fab = document.createElement("button");
+    fab.className = "fab"; fab.title = "Gemeinsamer Kalender"; fab.setAttribute("aria-label", "Gemeinsamer Kalender");
+    fab.innerHTML = "📅<span class='dot' hidden></span>";
+    root.appendChild(fab);
+    var box = document.createElement("div"); box.className = "box"; root.appendChild(box);
+    document.body.appendChild(host);
+    placeFab(fab);
+    dragFab(fab);
+    render();
+  }
+
+  function placeFab(fab) {
+    var p = null;
+    try { p = JSON.parse(localStorage.getItem(POS_KEY + ":" + APP) || "null"); } catch (e) {}
+    var x = p ? p.x : window.innerWidth - 60, y = p ? p.y : window.innerHeight - 140;
+    fab.style.left = Math.max(4, Math.min(window.innerWidth - 52, x)) + "px";
+    fab.style.top = Math.max(4, Math.min(window.innerHeight - 52, y)) + "px";
+  }
+  // Der Knopf lässt sich verschieben, falls er in einer App etwas verdeckt (Position wird pro App gemerkt).
+  function dragFab(fab) {
+    var sx, sy, ox, oy, moved = false, down = false;
+    fab.addEventListener("pointerdown", function (e) {
+      down = true; moved = false; sx = e.clientX; sy = e.clientY; ox = fab.offsetLeft; oy = fab.offsetTop;
+      try { fab.setPointerCapture(e.pointerId); } catch (_) {}
+    });
+    fab.addEventListener("pointermove", function (e) {
+      if (!down) return;
+      var dx = e.clientX - sx, dy = e.clientY - sy;
+      if (!moved && Math.abs(dx) + Math.abs(dy) < 8) return;
+      moved = true;
+      fab.style.left = Math.max(4, Math.min(window.innerWidth - 52, ox + dx)) + "px";
+      fab.style.top = Math.max(4, Math.min(window.innerHeight - 52, oy + dy)) + "px";
+    });
+    fab.addEventListener("pointerup", function () {
+      if (!down) return; down = false;
+      if (moved) {
+        try { localStorage.setItem(POS_KEY + ":" + APP, JSON.stringify({ x: fab.offsetLeft, y: fab.offsetTop })); } catch (e) {}
+      } else openPanel();
+    });
+    fab.addEventListener("click", function (e) { if (e.detail === 0) openPanel(); }); // Tastatur
+    window.addEventListener("resize", function () { placeFab(fab); });
+  }
+
+  function openPanel(date) {
+    mount();
+    var d = date ? parse(date) : new Date();
+    state.sel = iso(d); state.month = new Date(d.getFullYear(), d.getMonth(), 1); state.edit = null; state.open = true;
+    render();
+  }
+  function close() { state.open = false; state.edit = null; render(); }
+
+  function render() {
+    if (!root) return;
+    var all = live();
+    var today = iso(new Date());
+    var dot = root.querySelector(".fab .dot");
+    var n = all.filter(function (e) { return e.date === today; }).length;
+    dot.hidden = !n; dot.textContent = n;
+    var box = root.querySelector(".box");
+    if (!state.open) { box.innerHTML = ""; return; }
+    var evs = state.filter ? all.filter(function (e) { return e.app === APP; }) : all;
+    var h = "<div class='wrap'><div class='panel' role='dialog' aria-label='Gemeinsamer Kalender'>";
+    h += state.edit ? form(state.edit) : month(evs, today);
+    h += "</div></div>";
+    box.innerHTML = h;
+    bind(box);
+  }
+
+  function month(evs, today) {
+    var m = state.month, y = m.getFullYear(), mo = m.getMonth();
+    var byDay = {};
+    evs.forEach(function (e) { (byDay[e.date] = byDay[e.date] || []).push(e); });
+    var h = "<div class='hd'><button class='b' data-a='prev' aria-label='Voriger Monat'>‹</button><h2>" + MON[mo] + " " + y +
+      "</h2><button class='b' data-a='next' aria-label='Nächster Monat'>›</button><button class='b' data-a='today'>Heute</button><button class='b' data-a='close' aria-label='Schließen'>✕</button></div>";
+    h += "<div class='grid'>" + WD.map(function (w) { return "<div class='wd'>" + w + "</div>"; }).join("");
+    var start = new Date(y, mo, 1 - ((m.getDay() + 6) % 7));
+    for (var i = 0; i < 42; i++) {
+      var d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i), k = iso(d);
+      if (i === 35 && d.getMonth() !== mo) break;
+      var cls = "c" + (d.getMonth() !== mo ? " o" : "") + (k === today ? " t" : "") + (k === state.sel ? " s" : "");
+      var dots = (byDay[k] || []).slice(0, 4).map(function (e) { return "<i style='background:" + colorOf(e) + "'></i>"; }).join("");
+      h += "<div class='" + cls + "' data-day='" + k + "'><span class='n'>" + d.getDate() + "</span><span class='ds'>" + dots + "</span></div>";
+    }
+    h += "</div>";
+    h += "<label class='chk'><input type='checkbox' data-a='filter'" + (state.filter ? " checked" : "") + "> Nur Termine aus „" + esc(APP) + "“ zeigen</label>";
+    var list = byDay[state.sel] || [];
+    h += "<div class='sec'><div class='hd'><h3 style='flex:1;margin:0'>" + longDate(state.sel) + "</h3><button class='b p' data-a='new'>+ Termin</button></div>";
+    h += list.length ? list.map(item).join("") : "<div class='empty'>Keine Termine an diesem Tag.</div>";
+    h += "</div>";
+    var upcoming = evs.filter(function (e) { return e.date > state.sel; }).slice(0, 5);
+    if (upcoming.length) h += "<div class='sec'><h3>Danach</h3>" + upcoming.map(function (e) { return item(e, true); }).join("") + "</div>";
+    h += "<div class='tools'><button class='b' data-a='export'>Sichern</button><button class='b' data-a='import'>Importieren</button><button class='b' data-a='ics'>Als .ics exportieren</button></div>";
+    return h;
+  }
+
+  function item(e, withDate) {
+    var meta = [];
+    if (withDate) meta.push(parse(e.date).getDate() + ". " + MON[parse(e.date).getMonth()]);
+    if (e.time) meta.push(e.time + (e.end ? "–" + e.end : "") + " Uhr");
+    meta.push(e.app);
+    return "<div class='ev' data-id='" + esc(e.id) + "'><span class='bar' style='background:" + colorOf(e) + "'></span><div><div class='t'>" + esc(e.title) +
+      "</div><div class='m'>" + esc(meta.join(" · ")) + "</div>" + (e.note ? "<div class='m'>" + esc(e.note) + "</div>" : "") + "</div></div>";
+  }
+
+  function form(e) {
+    var isNew = !e.id;
+    var h = "<div class='hd'><h2>" + (isNew ? "Neuer Termin" : "Termin bearbeiten") + "</h2><button class='b' data-a='back' aria-label='Zurück'>✕</button></div>";
+    h += "<label>Titel</label><input name='title' maxlength='120' value='" + esc(e.title || "") + "' placeholder='z. B. Training, Klassenarbeit …'>";
+    h += "<label>Datum</label><input type='date' name='date' value='" + esc(e.date) + "'>";
+    h += "<div class='row'><div><label>Von (optional)</label><input type='time' name='time' value='" + esc(e.time || "") + "'></div>" +
+      "<div><label>Bis (optional)</label><input type='time' name='end' value='" + esc(e.end || "") + "'></div></div>";
+    h += "<label>Notiz</label><textarea name='note' maxlength='1000'>" + esc(e.note || "") + "</textarea>";
+    h += "<label>Farbe</label><select name='color'><option value=''>Farbe der App</option>" +
+      COLORS.map(function (c, i) { return "<option value='" + c + "'" + (e.color === c ? " selected" : "") + ">" + ["Blau", "Grün", "Orange", "Rot", "Lila", "Pink", "Türkis", "Oliv"][i] + "</option>"; }).join("") + "</select>";
+    if (!isNew) h += "<div class='m' style='margin-top:10px;font-size:12px;color:var(--mut)'>Angelegt in „" + esc(e.app) + "“</div>";
+    h += "<div class='act'>" + (isNew ? "" : "<button class='b d' data-a='del'>Löschen</button>") + "<span class='sp'></span><button class='b' data-a='back'>Abbrechen</button><button class='b p' data-a='save'>Speichern</button></div>";
+    return h;
+  }
+
+  function bind(box) {
+    box.querySelector(".wrap").addEventListener("click", function (ev) {
+      if (ev.target.classList.contains("wrap")) { close(); return; }
+      var t = ev.target.closest("[data-a],[data-day],[data-id]");
+      if (!t) return;
+      if (t.dataset.day) { state.sel = t.dataset.day; render(); return; }
+      if (t.dataset.id && !t.dataset.a) {
+        var e = live().find(function (x) { return x.id === t.dataset.id; });
+        if (e) { state.edit = Object.assign({}, e); render(); }
+        return;
+      }
+      act(t.dataset.a, box);
+    });
+    var f = box.querySelector("[data-a=filter]");
+    if (f) f.addEventListener("change", function () { state.filter = f.checked; render(); });
+    var ti = box.querySelector("input[name=title]");
+    if (ti && !state.edit.id) ti.focus();
+  }
+
+  function act(a, box) {
+    var m = state.month;
+    if (a === "prev") state.month = new Date(m.getFullYear(), m.getMonth() - 1, 1);
+    else if (a === "next") state.month = new Date(m.getFullYear(), m.getMonth() + 1, 1);
+    else if (a === "today") { var t = new Date(); state.sel = iso(t); state.month = new Date(t.getFullYear(), t.getMonth(), 1); }
+    else if (a === "close") return close();
+    else if (a === "new") state.edit = { date: state.sel, app: APP };
+    else if (a === "back") state.edit = null;
+    else if (a === "save") {
+      var v = {};
+      ["title", "date", "time", "end", "note", "color"].forEach(function (k) { v[k] = box.querySelector("[name=" + k + "]").value.trim(); });
+      if (!v.title) { box.querySelector("[name=title]").focus(); return; }
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(v.date)) { box.querySelector("[name=date]").focus(); return; }
+      if (state.edit.id) api.update(state.edit.id, v); else api.add(v);
+      state.sel = v.date; var d = parse(v.date); state.month = new Date(d.getFullYear(), d.getMonth(), 1);
+      state.edit = null;
+    }
+    else if (a === "del") {
+      if (!confirm("Termin „" + state.edit.title + "“ in allen Apps löschen?")) return;
+      api.remove(state.edit.id); state.edit = null;
+    }
+    else if (a === "export") return download("gemeinsamer-kalender-" + iso(new Date()) + ".json", "application/json", JSON.stringify(load(), null, 2));
+    else if (a === "import") return importFile();
+    else if (a === "ics") return download("gemeinsamer-kalender.ics", "text/calendar", ics());
+    render();
+  }
+
+  // Import führt zusammen: pro Termin gewinnt die zuletzt geänderte Fassung, nichts wird blind überschrieben.
+  function importFile() {
+    var inp = document.createElement("input");
+    inp.type = "file"; inp.accept = ".json,application/json";
+    inp.onchange = function () {
+      var file = inp.files && inp.files[0]; if (!file) return;
+      file.text().then(function (txt) {
+        var src = JSON.parse(txt);
+        if (!src || !Array.isArray(src.events)) throw new Error("format");
+        var added = 0;
+        mutate(function (d) {
+          src.events.forEach(function (e) {
+            if (!e || !e.id || !/^\d{4}-\d{2}-\d{2}$/.test(e.date)) return;
+            var i = d.events.findIndex(function (x) { return x.id === e.id; });
+            if (i < 0) { d.events.push(e); added++; }
+            else if ((e.changed || 0) > (d.events[i].changed || 0)) d.events[i] = e;
+          });
+        });
+        alert("Import fertig: " + added + " neue Termine.");
+      }).catch(function () { alert("Diese Datei ist keine gültige Kalender-Sicherung."); });
+    };
+    inp.click();
+  }
+
+  function ics() {
+    function f(s) { return String(s).replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/[,;]/g, "\\$&"); }
+    function stamp(date, time) { return date.replace(/-/g, "") + "T" + time.replace(":", "") + "00"; }
+    var out = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//SportGermany//Gemeinsamer Kalender//DE"];
+    live().forEach(function (e) {
+      out.push("BEGIN:VEVENT", "UID:" + e.id + "@sportgermany", "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z");
+      if (e.time) {
+        out.push("DTSTART:" + stamp(e.date, e.time));
+        if (e.end) out.push("DTEND:" + stamp(e.date, e.end));
+      } else {
+        var n = parse(e.date); n.setDate(n.getDate() + 1);
+        out.push("DTSTART;VALUE=DATE:" + e.date.replace(/-/g, ""), "DTEND;VALUE=DATE:" + iso(n).replace(/-/g, ""));
+      }
+      out.push("SUMMARY:" + f(e.title), "DESCRIPTION:" + f((e.note ? e.note + "\n" : "") + "aus " + e.app), "END:VEVENT");
+    });
+    out.push("END:VCALENDAR");
+    return out.join("\r\n");
+  }
+
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && state.open) close(); });
+  if (document.body) mount(); else document.addEventListener("DOMContentLoaded", mount);
+})();
+</script>
+<!-- gemeinsamer-kalender:end -->
 </body>
 </html>
