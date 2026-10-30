@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Wir zwei</string>
+    <string name="widget_name">Wir zwei – Tage zusammen</string>
+    <string name="widget_desc">Eure Tage zusammen und der nächste Termin</string>
+</resources>

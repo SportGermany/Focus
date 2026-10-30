@@ -1,0 +1,882 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Wir zwei</title>
+<style>
+@font-face{font-family:Playfair;src:url(fonts/playfair-display-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal}
+@font-face{font-family:Playfair;src:url(fonts/playfair-display-latin-600-normal.woff2) format('woff2');font-weight:600;font-style:normal}
+@font-face{font-family:Playfair;src:url(fonts/playfair-display-latin-400-italic.woff2) format('woff2');font-weight:400;font-style:italic}
+@font-face{font-family:Inter;src:url(fonts/inter-latin-400-normal.woff2) format('woff2');font-weight:400}
+@font-face{font-family:Inter;src:url(fonts/inter-latin-500-normal.woff2) format('woff2');font-weight:500}
+@font-face{font-family:Inter;src:url(fonts/inter-latin-600-normal.woff2) format('woff2');font-weight:600}
+
+:root{
+  --bg:#0d0a0e; --surface:#161117; --surface2:#1f1820; --surface3:#2a2129;
+  --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.12);
+  --text:#f4ecef; --muted:#a9979f; --faint:#6f6168;
+  --rose:#eaa7b9; --rose2:#c8668a; --gold:#d9b77d; --gold2:#a8844e;
+  --danger:#e57373;
+  --serif:Playfair, Georgia, 'Noto Serif', serif;
+  --sans:Inter, system-ui, Roboto, sans-serif;
+  --nav:68px; --r:20px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.45;overscroll-behavior:none}
+body{overflow:hidden;user-select:none;-webkit-user-select:none}
+input,textarea{user-select:text;-webkit-user-select:text}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+.serif{font-family:var(--serif)}
+.muted{color:var(--muted)}
+.gold{color:var(--gold)}
+.rose{color:var(--rose)}
+.eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:500}
+.hidden{display:none!important}
+
+/* Screens */
+#app{position:fixed;inset:0}
+.screen{position:absolute;inset:0 0 var(--nav) 0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;opacity:0;pointer-events:none;transition:opacity .25s ease}
+.screen.on{opacity:1;pointer-events:auto}
+.page{padding:22px 18px 28px}
+.page h1{font-family:var(--serif);font-weight:400;font-size:30px;margin:6px 0 2px;letter-spacing:.01em}
+.page .lead{color:var(--muted);margin:0 0 18px;font-size:14px}
+
+/* Nav */
+nav{position:fixed;left:0;right:0;bottom:0;height:var(--nav);display:flex;background:rgba(13,10,14,.92);backdrop-filter:blur(14px);border-top:1px solid var(--line);z-index:20}
+nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10.5px;letter-spacing:.06em;color:var(--faint);transition:color .2s}
+nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+nav button.on{color:var(--rose)}
+nav button.on svg{filter:drop-shadow(0 0 8px rgba(234,167,185,.45))}
+
+/* Home */
+#home{inset:0 0 var(--nav) 0}
+.hero{position:relative;min-height:100%;display:flex;flex-direction:column}
+.hero-bg{position:absolute;inset:0 0 auto 0;height:78vh;background-size:cover;background-position:center;z-index:0}
+.hero-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(13,10,14,.55) 0%,rgba(13,10,14,.35) 35%,rgba(13,10,14,.85) 72%,var(--bg) 100%)}
+.hero-bg.none{background:radial-gradient(120% 70% at 50% 0%,#3a2232 0%,#21151e 40%,var(--bg) 78%)}
+.hero-bg.none::after{background:none}
+.floaties{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+.floaties span{position:absolute;bottom:-30px;color:var(--rose);opacity:0;animation:floatUp linear infinite}
+@keyframes floatUp{0%{transform:translateY(0) scale(.6);opacity:0}15%{opacity:.35}100%{transform:translateY(-85vh) scale(1.1);opacity:0}}
+.hero-in{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:center;padding:38px 18px 24px}
+.couple{display:flex;align-items:center;gap:14px;margin-top:8px}
+.avatar{width:92px;height:92px;border-radius:50%;padding:3px;background:linear-gradient(140deg,var(--gold),var(--rose2) 60%,var(--gold2));box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.avatar>div{width:100%;height:100%;border-radius:50%;background:var(--surface2) center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:34px;color:var(--rose);border:2px solid var(--bg)}
+.beat{width:34px;height:34px;color:var(--rose);animation:beat 1.6s ease-in-out infinite;filter:drop-shadow(0 0 10px rgba(234,167,185,.6))}
+@keyframes beat{0%,100%{transform:scale(1)}12%{transform:scale(1.18)}24%{transform:scale(.96)}36%{transform:scale(1.1)}50%{transform:scale(1)}}
+.names{margin-top:14px;font-family:var(--serif);font-size:21px;font-style:italic;letter-spacing:.01em;text-align:center}
+.names .amp{color:var(--gold);font-style:normal;margin:0 6px}
+.counter{margin-top:30px;text-align:center;cursor:pointer;min-height:150px}
+.counter .big{font-family:var(--serif);font-size:76px;line-height:1;font-weight:400;letter-spacing:-.01em;background:linear-gradient(180deg,#fff 10%,#f0c9d4 70%,#d79aaf);-webkit-background-clip:text;background-clip:text;color:transparent;font-variant-numeric:lining-nums tabular-nums}
+.counter .big.mid{font-size:44px;line-height:1.15}
+.counter .unit{margin-top:8px;font-size:13px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold)}
+.counter .since{margin-top:10px;color:var(--muted);font-size:13.5px}
+.counter .hint{margin-top:6px;font-size:11px;color:var(--faint)}
+.ymd{display:flex;gap:22px;justify-content:center}
+.ymd div{text-align:center}
+.ymd b{display:block;font-family:var(--serif);font-weight:400;font-size:52px;line-height:1;background:linear-gradient(180deg,#fff,#e6b3c3);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ymd span{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
+.dots{display:flex;gap:6px;justify-content:center;margin-top:14px}
+.dots i{width:5px;height:5px;border-radius:50%;background:var(--surface3)}
+.dots i.on{background:var(--rose);width:16px;border-radius:3px;transition:all .3s}
+.section-title{display:flex;justify-content:space-between;align-items:baseline;width:100%;margin:34px 0 12px}
+.section-title h2{font-family:var(--serif);font-weight:400;font-size:20px;margin:0}
+.section-title button{color:var(--rose);font-size:13px}
+.empty-cta{width:100%;padding:22px;border:1px dashed var(--line2);border-radius:var(--r);text-align:center;color:var(--muted)}
+.empty-cta button{margin-top:10px}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.list{display:flex;flex-direction:column;gap:10px;width:100%}
+.ev{display:flex;align-items:center;gap:14px;background:linear-gradient(180deg,var(--surface) 0%,#140f15 100%);border:1px solid var(--line);border-radius:18px;padding:13px 14px;cursor:pointer;transition:transform .15s,border-color .2s}
+.ev:active{transform:scale(.985)}
+.ev.today{border-color:rgba(234,167,185,.55);box-shadow:0 0 0 1px rgba(234,167,185,.15),0 8px 30px rgba(200,102,138,.18)}
+.ev .ico{width:46px;height:46px;flex:none;border-radius:14px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:23px;border:1px solid var(--line)}
+.ev .mid{flex:1;min-width:0}
+.ev .t{font-weight:500;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev .s{font-size:12.5px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev .s .tag{color:var(--gold)}
+.ev .right{text-align:right;flex:none;min-width:58px}
+.ev .n{font-family:var(--serif);font-size:26px;line-height:1;color:var(--text)}
+.ev .u{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.ev.today .n{font-size:15px;font-family:var(--sans);font-weight:600;color:var(--rose)}
+.ev.past{opacity:.6}
+.group-h{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin:22px 4px 10px}
+
+.fab{position:fixed;right:18px;bottom:calc(var(--nav) + 18px);width:58px;height:58px;border-radius:50%;background:linear-gradient(140deg,var(--rose),var(--rose2));box-shadow:0 10px 28px rgba(200,102,138,.45);display:flex;align-items:center;justify-content:center;z-index:15;transition:transform .15s}
+.fab:active{transform:scale(.93)}
+.fab svg{width:26px;height:26px;stroke:#2a1420;stroke-width:2.4;fill:none;stroke-linecap:round}
+
+/* Milestones */
+.ring-wrap{display:flex;flex-direction:column;align-items:center;padding:8px 0 4px}
+.ring{position:relative;width:210px;height:210px}
+.ring svg{transform:rotate(-90deg)}
+.ring .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.ring .c b{font-family:var(--serif);font-weight:400;font-size:46px;line-height:1}
+.ring .c small{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.ring-cap{text-align:center;margin-top:14px}
+.ring-cap .t{font-family:var(--serif);font-size:20px}
+.ring-cap .s{color:var(--muted);font-size:13px;margin-top:2px}
+.seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px;margin:24px 0 14px}
+.seg button{flex:1;padding:9px;border-radius:10px;font-size:13px;color:var(--muted);transition:all .2s}
+.seg button.on{background:var(--surface3);color:var(--text)}
+.ms .ico{background:radial-gradient(circle at 30% 30%,#3b2a33,#1f1820)}
+.ms.done .ico{background:linear-gradient(140deg,rgba(217,183,125,.25),rgba(200,102,138,.2));border-color:rgba(217,183,125,.3)}
+.ms.done .n{color:var(--gold);font-size:18px}
+
+/* Settings */
+.set-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);margin-bottom:16px;overflow:hidden}
+.set-card h3{margin:0;padding:14px 16px 4px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:500}
+.row{display:flex;align-items:center;gap:12px;padding:13px 16px;border-top:1px solid var(--line);min-height:54px}
+.row:first-of-type{border-top:0}
+.row .lbl{flex:1;min-width:0}
+.row .lbl small{display:block;color:var(--muted);font-size:12px;margin-top:2px;line-height:1.35}
+.row button.link{color:var(--rose);font-size:14px}
+.row input[type=date],.row input[type=time]{background:var(--surface2);border:1px solid var(--line2);color:var(--text);border-radius:10px;padding:8px 10px;font:inherit;font-size:14px;color-scheme:dark}
+.people{display:flex;gap:12px;padding:12px 16px 16px}
+.person{flex:1;display:flex;flex-direction:column;align-items:center;gap:10px}
+.person .avatar{width:78px;height:78px;cursor:pointer;position:relative}
+.person .avatar .cam{position:absolute;right:-2px;bottom:-2px;width:26px;height:26px;border-radius:50%;background:var(--rose);display:flex;align-items:center;justify-content:center;border:2px solid var(--surface)}
+.person .avatar .cam svg{width:13px;height:13px;stroke:#2a1420;stroke-width:2.2;fill:none}
+.person input{width:100%;text-align:center}
+.switch{position:relative;width:46px;height:28px;flex:none}
+.switch input{opacity:0;width:0;height:0;position:absolute}
+.switch span{position:absolute;inset:0;border-radius:14px;background:var(--surface3);transition:.25s}
+.switch span::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#bfb0b7;transition:.25s}
+.switch input:checked+span{background:var(--rose2)}
+.switch input:checked+span::after{transform:translateX(18px);background:#fff}
+.bgprev{width:56px;height:56px;border-radius:12px;background:var(--surface2) center/cover;border:1px solid var(--line2);flex:none}
+.foot{text-align:center;color:var(--faint);font-size:12px;margin:22px 0 6px;line-height:1.6}
+
+/* Inputs */
+.field{display:block;margin-bottom:14px}
+.field>span{display:block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 0 7px 2px}
+.inp{width:100%;background:var(--surface2);border:1px solid var(--line2);color:var(--text);border-radius:14px;padding:13px 14px;font:inherit;font-size:16px;outline:none;color-scheme:dark;transition:border-color .2s}
+.inp:focus{border-color:rgba(234,167,185,.6)}
+textarea.inp{resize:none;min-height:70px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:8px 13px;border-radius:999px;background:var(--surface2);border:1px solid var(--line2);font-size:13.5px;color:var(--muted);transition:all .15s}
+.chip.on{background:rgba(234,167,185,.14);border-color:rgba(234,167,185,.55);color:var(--text)}
+.emojis{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+.emojis button{aspect-ratio:1;border-radius:12px;font-size:21px;background:var(--surface2);border:1px solid transparent}
+.emojis button.on{border-color:var(--rose);background:rgba(234,167,185,.12)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 20px;border-radius:16px;font-weight:600;font-size:15px;letter-spacing:.01em;transition:transform .12s,opacity .2s}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:linear-gradient(140deg,var(--rose),var(--rose2));color:#2a1420;box-shadow:0 8px 24px rgba(200,102,138,.35)}
+.btn.ghost{background:var(--surface2);border:1px solid var(--line2);color:var(--text)}
+.btn.danger{background:rgba(229,115,115,.12);border:1px solid rgba(229,115,115,.35);color:#f2a5a5}
+.btn.block{width:100%}
+.btn.small{padding:9px 14px;font-size:13px;border-radius:12px}
+.btn-row{display:flex;gap:10px;margin-top:6px}
+.btn-row .btn{flex:1}
+
+/* Sheet */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity .25s;z-index:40}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-height:92vh;overflow-y:auto;background:var(--surface);border-top:1px solid var(--line2);border-radius:26px 26px 0 0;padding:10px 18px 26px;transform:translateY(105%);transition:transform .32s cubic-bezier(.2,.8,.2,1);z-index:41}
+.sheet.on{transform:none}
+.sheet .grab{width:40px;height:4px;border-radius:2px;background:var(--surface3);margin:4px auto 14px}
+.sheet h2{font-family:var(--serif);font-weight:400;font-size:24px;margin:2px 0 18px}
+
+/* Detail */
+.det-top{text-align:center;padding:6px 0 4px}
+.det-emoji{font-size:54px;line-height:1;filter:drop-shadow(0 6px 18px rgba(0,0,0,.4))}
+.det-title{font-family:var(--serif);font-size:26px;margin-top:12px}
+.det-sub{color:var(--muted);font-size:13.5px;margin-top:4px}
+.cd{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:22px 0 8px}
+.cd div{background:var(--surface2);border:1px solid var(--line);border-radius:16px;padding:14px 4px 10px;text-align:center}
+.cd b{display:block;font-family:var(--serif);font-weight:400;font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+.cd span{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.cd-cap{text-align:center;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-top:16px}
+.today-banner{margin:20px 0 6px;padding:20px;border-radius:18px;text-align:center;background:linear-gradient(140deg,rgba(234,167,185,.16),rgba(217,183,125,.12));border:1px solid rgba(234,167,185,.35);font-family:var(--serif);font-size:22px}
+.since-box{display:flex;justify-content:space-around;margin:16px 0 4px;padding:14px;border-radius:16px;background:var(--surface2);border:1px solid var(--line)}
+.since-box div{text-align:center}
+.since-box b{display:block;font-family:var(--serif);font-weight:400;font-size:22px}
+.since-box span{font-size:11px;color:var(--muted)}
+.note{margin-top:14px;padding:14px;border-radius:14px;background:var(--surface2);color:var(--muted);font-style:italic;font-family:var(--serif);font-size:15px;white-space:pre-wrap}
+
+/* Onboarding */
+#onb{position:fixed;inset:0;z-index:60;background:radial-gradient(120% 60% at 50% 0%,#3a2232 0%,#1c121a 45%,var(--bg) 80%);display:flex;flex-direction:column;overflow-y:auto}
+.onb-step{flex:1;display:flex;flex-direction:column;padding:48px 24px 28px;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.onb-step h1{font-family:var(--serif);font-weight:400;font-size:34px;line-height:1.15;margin:16px 0 10px}
+.onb-step p{color:var(--muted);margin:0 0 26px}
+.onb-step .grow{flex:1}
+.logo{display:flex;flex-direction:column;align-items:center;margin-top:12vh;text-align:center}
+.logo .rings{position:relative;width:120px;height:120px}
+.logo .rings svg{position:absolute;inset:0}
+.logo h1{font-size:46px;margin:24px 0 8px;font-style:italic}
+.progress{display:flex;gap:6px;justify-content:center;margin-top:18px}
+.progress i{width:6px;height:6px;border-radius:3px;background:var(--surface3);transition:all .3s}
+.progress i.on{width:20px;background:var(--rose)}
+
+.toast{position:fixed;left:50%;bottom:calc(var(--nav) + 24px);transform:translate(-50%,20px);background:var(--surface3);border:1px solid var(--line2);color:var(--text);padding:11px 18px;border-radius:14px;font-size:14px;opacity:0;transition:all .3s;z-index:80;pointer-events:none;max-width:86vw;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:90;overflow:hidden}
+.confetti span{position:absolute;top:-30px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HOME -->
+  <section class="screen on" id="home"></section>
+
+  <!-- EVENTS -->
+  <section class="screen" id="events"></section>
+
+  <!-- MILESTONES -->
+  <section class="screen" id="miles"></section>
+
+  <!-- SETTINGS -->
+  <section class="screen" id="settings"></section>
+
+  <button class="fab hidden" id="fab" aria-label="Datum hinzufügen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+
+  <nav>
+    <button data-tab="home" class="on"><svg viewBox="0 0 24 24"><path d="M12 20.5l-1.3-1.2C6 15 3 12.3 3 8.9 3 6.2 5.1 4 7.8 4c1.6 0 3.1.7 4.2 1.9C13.1 4.7 14.6 4 16.2 4 18.9 4 21 6.2 21 8.9c0 3.4-3 6.1-7.7 10.4L12 20.5z"/></svg>Wir</button>
+    <button data-tab="events"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Termine</button>
+    <button data-tab="miles"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.5 6 .8-4.4 4.2 1.1 6L12 16.6 6.7 19.5l1.1-6L3.4 9.3l6-.8z"/></svg>Meilensteine</button>
+    <button data-tab="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Einstellungen</button>
+  </nav>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet"><div class="grab"></div><div id="sheetBody"></div></div>
+<div id="onb" class="hidden"></div>
+<div class="toast" id="toast"></div>
+<input type="file" id="file" accept="image/*" class="hidden">
+
+<script>
+'use strict';
+/* ---------- Bridge & storage ---------- */
+const A = window.Android || null;
+const KEY = 'wirzwei';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const HEART = 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z';
+
+const KINDS = {
+  birthday:    {l: 'Geburtstag', e: '🎂', y: true},
+  anniversary: {l: 'Jahrestag',  e: '💍', y: true},
+  date:        {l: 'Date',       e: '🥂', y: false},
+  trip:        {l: 'Reise',      e: '✈️', y: false},
+  wedding:     {l: 'Hochzeit',   e: '💒', y: true},
+  other:       {l: 'Sonstiges',  e: '⭐', y: false},
+};
+const EMOJIS = ['❤️','💞','💍','🎂','🥂','✈️','💒','🌹','🎁','🏠','🐾','👶','🎓','🎄','🌙','⭐','📸','🍝','🎶','🏖️','⛰️','🎉','💌','🔑'];
+const REMINDS = [[0,'Am Tag'],[1,'1 Tag vorher'],[3,'3 Tage'],[7,'1 Woche'],[30,'1 Monat']];
+
+function defaults() {
+  return {
+    v: 1,
+    p1: {name: '', photo: null, thumb: null},
+    p2: {name: '', photo: null, thumb: null},
+    start: null,
+    ann: {title: 'Unser Jahrestag', emoji: '💞', remind: [0, 7]},
+    bg: null,
+    events: [],
+    settings: {notif: true, time: '09:00', ms: true, plus1: false, unit: 0},
+    onboarded: false,
+  };
+}
+let D = defaults();
+function load() {
+  try {
+    const s = A ? A.load() : localStorage.getItem(KEY);
+    if (s) {
+      const d = JSON.parse(s), def = defaults();
+      D = Object.assign(def, d);
+      D.settings = Object.assign(def.settings, d.settings || {});
+      D.ann = Object.assign(def.ann, d.ann || {});
+    }
+  } catch (e) { console.error(e); }
+}
+function save() {
+  const json = JSON.stringify(D);
+  try {
+    if (A) A.save(json, JSON.stringify(buildSched()));
+    else localStorage.setItem(KEY, json);
+  } catch (e) { toast('Speichern fehlgeschlagen'); console.error(e); }
+}
+
+/* ---------- Dates ---------- */
+const pad = n => String(n).padStart(2, '0');
+const pd = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const today0 = () => { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); };
+const dayNum = d => Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5);
+const diff = (a, b) => dayNum(b) - dayNum(a);
+const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+const mk = (y, m, d) => { const x = new Date(y, m, d); return x.getMonth() !== ((m % 12) + 12) % 12 ? new Date(y, m + 1, 0) : x; };
+const addMonths = (d, n) => mk(d.getFullYear(), d.getMonth() + n, d.getDate());
+const fmtN = n => n.toLocaleString('de-DE');
+const fmtD = (d, o = {day: 'numeric', month: 'long', year: 'numeric'}) => d.toLocaleDateString('de-DE', o);
+const fmtW = d => d.toLocaleDateString('de-DE', {weekday: 'short', day: 'numeric', month: 'long'});
+
+function ymd(a, b) {
+  let y = b.getFullYear() - a.getFullYear(), m = b.getMonth() - a.getMonth(), d = b.getDate() - a.getDate();
+  if (d < 0) { m--; d += new Date(b.getFullYear(), b.getMonth(), 0).getDate(); }
+  if (m < 0) { y--; m += 12; }
+  return {y, m, d};
+}
+function nextOcc(ev, from = today0()) {
+  const o = pd(ev.date);
+  if (!ev.yearly || o >= from) return o;
+  let n = mk(from.getFullYear(), o.getMonth(), o.getDate());
+  if (n < from) n = mk(from.getFullYear() + 1, o.getMonth(), o.getDate());
+  return n;
+}
+const inDays = n => n === 0 ? 'heute' : n === 1 ? 'morgen' : n === -1 ? 'gestern' : n > 0 ? `in ${fmtN(n)} Tagen` : `vor ${fmtN(-n)} Tagen`;
+const plural = (n, one, many) => `${fmtN(n)} ${n === 1 ? one : many}`;
+
+/* ---------- Model helpers ---------- */
+function annEvent() {
+  if (!D.start) return null;
+  return {id: '__start', kind: 'anniversary', title: D.ann.title || 'Unser Jahrestag', emoji: D.ann.emoji || '💞',
+          date: D.start, yearly: true, remind: D.ann.remind || [], note: '', locked: true};
+}
+function allEvents() { const a = annEvent(); return a ? [a, ...D.events] : [...D.events]; }
+function getEvent(id) { return allEvents().find(e => e.id === id); }
+
+// Zusatz-Info zu einem Vorkommen: "wird 30", "3. Jahrestag" ...
+function occLabel(ev, occ) {
+  if (!ev.yearly) return '';
+  const years = occ.getFullYear() - pd(ev.date).getFullYear();
+  if (years <= 0) return '';
+  if (ev.kind === 'birthday') return `wird ${years}`;
+  if (ev.kind === 'anniversary' || ev.kind === 'wedding') return `${years}. Jahrestag`;
+  return `zum ${years}. Mal`;
+}
+function dayCount(d = today0()) { return D.start ? diff(pd(D.start), d) + (D.settings.plus1 ? 1 : 0) : 0; }
+
+function milestones() {
+  if (!D.start) return [];
+  const s = pd(D.start), off = D.settings.plus1 ? 1 : 0, L = [];
+  const days = [100,200,300,400,500,600,700,777,800,900,1000,1111,1234,1500,2000,2222,2500,3000,3333,3500,4000,4444,4500,5000,5555,6000,6666,7000,7777,8000,8888,9000,9999,10000,11111,12345,15000,20000];
+  days.forEach(n => L.push({key: 'd' + n, date: addDays(s, n - off), title: `${fmtN(n)} Tage`, e: n % 1000 === 0 || /^(\d)\1+$/.test(n) ? '✨' : '💫', kind: 'days'}));
+  L.push({key: 'm6', date: addMonths(s, 6), title: 'Ein halbes Jahr', e: '🌸', kind: 'months'});
+  for (let k = 1; k <= 60; k++) L.push({key: 'y' + k, date: mk(s.getFullYear() + k, s.getMonth(), s.getDate()), title: k === 1 ? '1 Jahr' : `${k} Jahre`, e: k % 5 === 0 ? '👑' : '💍', kind: 'years'});
+  [100, 500, 1000, 2000].forEach(w => L.push({key: 'w' + w, date: addDays(s, w * 7), title: `${fmtN(w)} Wochen`, e: '🗓️', kind: 'weeks'}));
+  [10000, 50000, 100000, 250000].forEach(h => L.push({key: 'h' + h, date: addDays(s, Math.floor(h / 24)), title: `${fmtN(h)} Stunden`, e: '⏳', kind: 'hours'}));
+  [1e6, 5e6, 1e7].forEach(m => L.push({key: 'min' + m, date: addDays(s, Math.floor(m / 1440)), title: m === 1e6 ? '1 Million Minuten' : `${fmtN(m / 1e6)} Millionen Minuten`, e: '⏱️', kind: 'minutes'}));
+  L.push({key: 's1e9', date: addDays(s, Math.floor(1e9 / 86400)), title: '1 Milliarde Sekunden', e: '🌌', kind: 'seconds'});
+  return L.sort((a, b) => a.date - b.date);
+}
+
+// Alles, was demnächst ansteht (Termine + Meilensteine ohne Jahrestage, die stehen schon als Termin drin)
+function upcoming(limitDays = 400) {
+  const t = today0(), out = [];
+  allEvents().forEach(ev => {
+    const o = nextOcc(ev, t), n = diff(t, o);
+    if (n >= 0 && n <= limitDays) out.push({type: 'ev', id: ev.id, e: ev.emoji, t: ev.title, date: o, n, sub: occLabel(ev, o)});
+  });
+  milestones().forEach(m => {
+    if (m.kind === 'years') return;
+    const n = diff(t, m.date);
+    if (n >= 0 && n <= limitDays) out.push({type: 'ms', id: m.key, e: m.e, t: m.title, date: m.date, n, sub: 'Meilenstein'});
+  });
+  return out.sort((a, b) => a.n - b.n);
+}
+
+// Zeitplan für die native Seite (Widget + Benachrichtigungen)
+function buildSched() {
+  const t = today0(), H = 420, remind = [], next = [];
+  const n1 = D.p1.name || 'Du', n2 = D.p2.name || 'Ich';
+  allEvents().forEach(ev => {
+    const orig = pd(ev.date);
+    const occs = ev.yearly ? [0, 1].map(k => mk(t.getFullYear() + k, orig.getMonth(), orig.getDate())).filter(o => o >= orig) : [orig];
+    occs.forEach(o => {
+      const sub = occLabel(ev, o);
+      (ev.remind || []).forEach(r => {
+        const nd = addDays(o, -r), dn = diff(t, nd);
+        if (dn < 0 || dn > H) return;
+        const when = r === 0 ? 'Heute' : r === 1 ? 'Morgen' : `In ${r} Tagen`;
+        let body = `${fmtD(o, {weekday: 'long', day: 'numeric', month: 'long'})}${sub ? ' · ' + sub : ''}`;
+        if (r === 0) body = ev.kind === 'birthday' ? `${sub ? ev.title + ' – ' + sub + '. ' : ''}Zeit zum Feiern! 🎉` : (sub ? `${sub} – ` : '') + 'Habt einen wunderschönen Tag 💕';
+        remind.push({d: iso(nd), t: `${ev.emoji} ${when}: ${ev.title}`, b: body});
+      });
+    });
+  });
+  if (D.settings.ms) milestones().forEach(m => {
+    if (m.kind === 'years') return;
+    const dn = diff(t, m.date);
+    if (dn >= 0 && dn <= H) remind.push({d: iso(m.date), t: `${m.e} Heute: ${m.title} zusammen!`, b: `${n1} & ${n2} – auf euch! 🥂`});
+    const pre = addDays(m.date, -7), dp = diff(t, pre);
+    if (m.kind === 'days' && dp >= 0 && dp <= H && (parseInt(m.key.slice(1)) % 1000 === 0))
+      remind.push({d: iso(pre), t: `${m.e} In einer Woche: ${m.title}`, b: 'Zeit, sich etwas Schönes zu überlegen 💌'});
+  });
+  upcoming(H).slice(0, 80).forEach(u => next.push({d: iso(u.date), t: u.t, e: u.e}));
+  return {start: D.start, plus1: D.settings.plus1, n1: D.p1.name, n2: D.p2.name, a1: D.p1.thumb, a2: D.p2.thumb,
+          notif: D.settings.notif, time: D.settings.time, remind, next};
+}
+
+/* ---------- UI helpers ---------- */
+let toastT;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2200); }
+const heartSvg = (cls = '') => `<svg class="${cls}" viewBox="0 0 24 24"><defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6c3d1"/><stop offset="1" stop-color="#c8668a"/></linearGradient></defs><path fill="url(#hg)" d="${HEART}"/></svg>`;
+function avatarHtml(p, fallback) {
+  const init = esc((p.name || fallback).trim().charAt(0).toUpperCase());
+  return `<div style="${p.photo ? `background-image:url(${p.photo})` : ''}">${p.photo ? '' : init}</div>`;
+}
+function confetti() {
+  const c = document.createElement('div'); c.className = 'confetti';
+  const set = ['💖','💕','✨','💗','🌸','💞'];
+  for (let i = 0; i < 36; i++) {
+    const s = document.createElement('span');
+    s.textContent = set[i % set.length];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.fontSize = 14 + Math.random() * 16 + 'px';
+    s.style.animationDuration = 2.2 + Math.random() * 2 + 's';
+    s.style.animationDelay = Math.random() * .8 + 's';
+    c.appendChild(s);
+  }
+  document.body.appendChild(c); setTimeout(() => c.remove(), 5200);
+}
+
+/* ---------- Images ---------- */
+function pickImage(cb) {
+  const inp = $('#file'); inp.value = '';
+  inp.onchange = () => {
+    const f = inp.files && inp.files[0]; if (!f) return;
+    const url = URL.createObjectURL(f), img = new Image();
+    img.onload = () => { try { cb(img); } finally { URL.revokeObjectURL(url); } };
+    img.onerror = () => { toast('Bild konnte nicht geladen werden'); URL.revokeObjectURL(url); };
+    img.src = url;
+  };
+  inp.click();
+}
+function squareImg(img, size, q = .86) {
+  const w = img.naturalWidth, h = img.naturalHeight, s = Math.min(w, h), c = document.createElement('canvas');
+  c.width = c.height = size;
+  c.getContext('2d').drawImage(img, (w - s) / 2, (h - s) / 2, s, s, 0, 0, size, size);
+  return c.toDataURL('image/jpeg', q);
+}
+function fitImg(img, max, q = .8) {
+  const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement('canvas');
+  c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', q);
+}
+function setPhoto(p, cb) { pickImage(img => { p.photo = squareImg(img, 480); p.thumb = squareImg(img, 144, .8); save(); cb && cb(); }); }
+
+/* ---------- Navigation ---------- */
+let tab = 'home';
+function go(t) {
+  tab = t;
+  $$('.screen').forEach(s => s.classList.toggle('on', s.id === t));
+  $$('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  $('#fab').classList.toggle('hidden', t !== 'events');
+  render();
+  $('#' + t).scrollTop = 0;
+}
+$$('nav button').forEach(b => b.onclick = () => go(b.dataset.tab));
+$('#fab').onclick = () => openEditor();
+
+function render() {
+  if (tab === 'home') renderHome();
+  else if (tab === 'events') renderEvents();
+  else if (tab === 'miles') renderMiles();
+  else if (tab === 'settings') renderSettings();
+}
+
+/* ---------- Home ---------- */
+const UNITS = ['days', 'ymd', 'weeks', 'months', 'hours', 'minutes', 'seconds'];
+function counterHtml() {
+  if (!D.start) return `<div class="big mid">Noch kein Datum</div><div class="since">Lege in den Einstellungen fest, seit wann ihr zusammen seid.</div>`;
+  const s = pd(D.start), now = new Date(), t = today0(), u = UNITS[D.settings.unit % UNITS.length];
+  if (s > t) {
+    const n = diff(t, s);
+    return `<div class="big">${fmtN(n)}</div><div class="unit">${n === 1 ? 'Tag' : 'Tage'} bis es losgeht</div><div class="since">am ${fmtD(s)}</div>`;
+  }
+  const ms = now - s;
+  let big, unit;
+  switch (u) {
+    case 'ymd': {
+      const r = ymd(s, t);
+      return `<div class="ymd"><div><b>${r.y}</b><span>${r.y === 1 ? 'Jahr' : 'Jahre'}</span></div><div><b>${r.m}</b><span>${r.m === 1 ? 'Monat' : 'Monate'}</span></div><div><b>${r.d}</b><span>${r.d === 1 ? 'Tag' : 'Tage'}</span></div></div>
+        <div class="since">zusammen seit ${fmtD(s)}</div>`;
+    }
+    case 'weeks': { const d = diff(s, t), w = Math.floor(d / 7), r = d % 7;
+      big = fmtN(w); unit = `${w === 1 ? 'Woche' : 'Wochen'}${r ? ` & ${plural(r, 'Tag', 'Tage')}` : ''}`; break; }
+    case 'months': { const r = ymd(s, t), m = r.y * 12 + r.m; big = fmtN(m); unit = `${m === 1 ? 'Monat' : 'Monate'}${r.d ? ` & ${plural(r.d, 'Tag', 'Tage')}` : ''}`; break; }
+    case 'hours': big = fmtN(Math.floor(ms / 36e5)); unit = 'Stunden'; break;
+    case 'minutes': big = fmtN(Math.floor(ms / 6e4)); unit = 'Minuten'; break;
+    case 'seconds': big = fmtN(Math.floor(ms / 1e3)); unit = 'Sekunden'; break;
+    default: { const d = dayCount(); big = fmtN(d); unit = d === 1 ? 'Tag zusammen' : 'Tage zusammen'; }
+  }
+  const cls = big.length > 9 ? 'big mid' : 'big';
+  return `<div class="${cls}" id="bigNum">${big}</div><div class="unit">${unit}</div><div class="since">seit ${fmtD(s)}</div>`;
+}
+function renderHome() {
+  const bg = D.bg ? `style="background-image:url(${D.bg})"` : '';
+  const up = upcoming().slice(0, 4);
+  const hearts = Array.from({length: 9}, (_, i) => `<span style="left:${8 + i * 10.5}%;font-size:${10 + (i * 7) % 14}px;animation-duration:${9 + (i * 3) % 7}s;animation-delay:${i * 1.3}s">♥</span>`).join('');
+  $('#home').innerHTML = `
+  <div class="hero">
+    <div class="hero-bg ${D.bg ? '' : 'none'}" ${bg}></div>
+    <div class="floaties">${hearts}</div>
+    <div class="hero-in">
+      <div class="eyebrow">Wir zwei</div>
+      <div class="couple">
+        <div class="avatar" id="av1">${avatarHtml(D.p1, 'A')}</div>
+        ${heartSvg('beat')}
+        <div class="avatar" id="av2">${avatarHtml(D.p2, 'B')}</div>
+      </div>
+      <div class="names">${esc(D.p1.name || 'Du')}<span class="amp">&amp;</span>${esc(D.p2.name || 'Ich')}</div>
+      <div class="counter" id="counter">${counterHtml()}
+        <div class="dots">${UNITS.map((_, i) => `<i class="${i === D.settings.unit % UNITS.length ? 'on' : ''}"></i>`).join('')}</div>
+        <div class="hint">Tippen zum Umschalten</div>
+      </div>
+      <div class="section-title"><h2>Demnächst</h2><button id="allEv">Alle Termine</button></div>
+      ${up.length ? `<div class="list">${up.map(evRowHtml).join('')}</div>` :
+        `<div class="empty-cta">Noch keine Termine.<br><button class="btn ghost small" id="addFirst">+ Wichtiges Datum hinzufügen</button></div>`}
+    </div>
+  </div>`;
+  $('#counter').onclick = () => { D.settings.unit = (D.settings.unit + 1) % UNITS.length; save(); renderHome(); };
+  $('#allEv').onclick = () => go('events');
+  $('#av1').onclick = () => setPhoto(D.p1, renderHome);
+  $('#av2').onclick = () => setPhoto(D.p2, renderHome);
+  const af = $('#addFirst'); if (af) af.onclick = () => openEditor();
+  bindRows($('#home'));
+}
+function evRowHtml(u) {
+  const today = u.n === 0;
+  return `<div class="ev ${today ? 'today' : ''} ${u.type === 'ms' ? 'ms' : ''}" data-type="${u.type}" data-id="${esc(u.id)}">
+    <div class="ico">${u.e}</div>
+    <div class="mid"><div class="t">${esc(u.t)}</div><div class="s">${fmtW(u.date)}${u.sub ? ` · <span class="tag">${esc(u.sub)}</span>` : ''}</div></div>
+    <div class="right">${today ? `<div class="n">Heute 🎉</div>` : `<div class="n">${fmtN(u.n)}</div><div class="u">${u.n === 1 ? 'Tag' : 'Tage'}</div>`}</div>
+  </div>`;
+}
+function bindRows(root) {
+  $$('.ev', root).forEach(r => r.onclick = () => r.dataset.type === 'ms' ? openMilestone(r.dataset.id) : openDetail(r.dataset.id));
+}
+
+/* ---------- Events ---------- */
+function renderEvents() {
+  const t = today0(), evs = allEvents();
+  const rows = evs.map(ev => { const o = nextOcc(ev, t); return {ev, o, n: diff(t, o)}; });
+  const fut = rows.filter(r => r.n >= 0).sort((a, b) => a.n - b.n);
+  const past = rows.filter(r => r.n < 0).sort((a, b) => b.o - a.o);
+  const row = r => evRowHtml({type: 'ev', id: r.ev.id, e: r.ev.emoji, t: r.ev.title, date: r.o, n: r.n, sub: occLabel(r.ev, r.o) || (r.ev.yearly ? 'jährlich' : '')});
+  const pastRow = r => `<div class="ev past" data-type="ev" data-id="${esc(r.ev.id)}"><div class="ico">${r.ev.emoji}</div>
+      <div class="mid"><div class="t">${esc(r.ev.title)}</div><div class="s">${fmtD(r.o)}</div></div>
+      <div class="right"><div class="n">${fmtN(-r.n)}</div><div class="u">Tage her</div></div></div>`;
+  $('#events').innerHTML = `<div class="page">
+    <div class="eyebrow">Eure Daten</div><h1>Termine</h1>
+    <p class="lead">Geburtstage, Jahrestage, Reisen – alles, was zählt.</p>
+    ${evs.length ? '' : `<div class="empty-cta">Hier erscheinen eure wichtigen Daten.<br><button class="btn primary small" id="addE">+ Erstes Datum hinzufügen</button></div>`}
+    ${fut.length ? `<div class="group-h">Kommend</div><div class="list">${fut.map(row).join('')}</div>` : ''}
+    ${past.length ? `<div class="group-h">Vergangen</div><div class="list">${past.map(pastRow).join('')}</div>` : ''}
+    <div style="height:70px"></div></div>`;
+  const ae = $('#addE'); if (ae) ae.onclick = () => openEditor();
+  bindRows($('#events'));
+}
+
+/* ---------- Milestones ---------- */
+let msFilter = 'next';
+function renderMiles() {
+  const el = $('#miles');
+  if (!D.start) { el.innerHTML = `<div class="page"><div class="eyebrow">Eure Reise</div><h1>Meilensteine</h1><div class="empty-cta">Lege zuerst euer Startdatum fest.<br><button class="btn primary small" id="toSet">Zu den Einstellungen</button></div></div>`; $('#toSet').onclick = () => go('settings'); return; }
+  const t = today0(), all = milestones();
+  const next = all.find(m => m.date >= t), prevIdx = all.findIndex(m => m === next) - 1;
+  const prevDate = prevIdx >= 0 ? all[prevIdx].date : pd(D.start);
+  let ring = '';
+  if (next) {
+    const total = Math.max(1, diff(prevDate, next.date)), done = diff(prevDate, t), left = diff(t, next.date);
+    const p = Math.min(1, Math.max(0, done / total)), R = 92, C = 2 * Math.PI * R;
+    ring = `<div class="ring-wrap"><div class="ring">
+      <svg width="210" height="210" viewBox="0 0 210 210"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9b77d"/><stop offset="1" stop-color="#c8668a"/></linearGradient></defs>
+      <circle cx="105" cy="105" r="${R}" fill="none" stroke="#2a2129" stroke-width="10"/>
+      <circle cx="105" cy="105" r="${R}" fill="none" stroke="url(#rg)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - p)}"/></svg>
+      <div class="c">${left === 0 ? `<b style="font-size:34px">Heute!</b>` : `<b>${fmtN(left)}</b><small>${left === 1 ? 'Tag' : 'Tage'} noch</small>`}</div></div>
+      <div class="ring-cap"><div class="t">${next.e} ${esc(next.title)}</div><div class="s">am ${fmtD(next.date, {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'})}</div></div></div>`;
+  }
+  const list = msFilter === 'next' ? all.filter(m => m.date >= t) : all.filter(m => m.date < t).reverse();
+  el.innerHTML = `<div class="page">
+    <div class="eyebrow">Eure Reise</div><h1>Meilensteine</h1>
+    <p class="lead">Heute ist euer <span class="rose">${fmtN(dayCount())}.</span> gemeinsamer Tag.</p>
+    ${ring}
+    <div class="seg"><button data-f="next" class="${msFilter === 'next' ? 'on' : ''}">Kommend</button><button data-f="done" class="${msFilter === 'done' ? 'on' : ''}">Erreicht (${all.filter(m => m.date < t).length})</button></div>
+    <div class="list">${list.length ? list.slice(0, msFilter === 'next' ? 40 : 200).map(m => {
+      const n = diff(t, m.date), done = n < 0;
+      return `<div class="ev ms ${done ? 'done' : ''} ${n === 0 ? 'today' : ''}" data-type="ms" data-id="${m.key}"><div class="ico">${m.e}</div>
+        <div class="mid"><div class="t">${esc(m.title)}</div><div class="s">${fmtD(m.date)}</div></div>
+        <div class="right">${done ? `<div class="n">✓</div><div class="u">geschafft</div>` : n === 0 ? `<div class="n">Heute 🎉</div>` : `<div class="n">${fmtN(n)}</div><div class="u">${n === 1 ? 'Tag' : 'Tage'}</div>`}</div></div>`;
+    }).join('') : `<div class="empty-cta">${msFilter === 'next' ? 'Alles geschafft – unglaublich!' : 'Euer erster Meilenstein kommt bald 💫'}</div>`}</div>
+  </div>`;
+  $$('.seg button', el).forEach(b => b.onclick = () => { msFilter = b.dataset.f; renderMiles(); });
+  bindRows(el);
+}
+
+/* ---------- Settings ---------- */
+function notifState() { try { return A ? A.notifState() : 'granted'; } catch (e) { return 'granted'; } }
+function renderSettings() {
+  const ns = notifState();
+  $('#settings').innerHTML = `<div class="page">
+    <div class="eyebrow">Persönlich</div><h1>Einstellungen</h1><p class="lead">Alles bleibt nur auf diesem Handy.</p>
+
+    <div class="set-card"><h3>Ihr zwei</h3>
+      <div class="people">
+        ${[1, 2].map(i => { const p = D['p' + i]; return `<div class="person"><div class="avatar" data-ph="${i}">${avatarHtml(p, i === 1 ? 'A' : 'B')}<span class="cam"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span></div>
+          <input class="inp" data-name="${i}" placeholder="${i === 1 ? 'Name 1' : 'Name 2'}" value="${esc(p.name)}" maxlength="24"></div>`; }).join('')}
+      </div>
+      <div class="row"><div class="lbl">Zusammen seit<small>Euer Start – Grundlage für Zähler & Meilensteine</small></div><input type="date" id="sStart" value="${D.start || ''}"></div>
+      <div class="row"><div class="bgprev" style="${D.bg ? `background-image:url(${D.bg})` : ''}"></div><div class="lbl">Hintergrundbild<small>Ein Foto von euch für den Startbildschirm</small></div>
+        <button class="link" id="sBg">${D.bg ? 'Ändern' : 'Wählen'}</button>${D.bg ? `<button class="link" id="sBgDel" style="color:var(--muted)">Entfernen</button>` : ''}</div>
+    </div>
+
+    <div class="set-card"><h3>Erinnerungen</h3>
+      <div class="row"><div class="lbl">Benachrichtigungen<small>${ns === 'granted' ? 'Für Termine, je nach Einstellung am Tag oder vorher' : '<span style="color:var(--danger)">Noch nicht erlaubt – tippe zum Aktivieren</span>'}</small></div>
+        <label class="switch"><input type="checkbox" id="sNotif" ${D.settings.notif && ns === 'granted' ? 'checked' : ''}><span></span></label></div>
+      <div class="row"><div class="lbl">Uhrzeit<small>Wann sollen Erinnerungen kommen?</small></div><input type="time" id="sTime" value="${D.settings.time}"></div>
+      <div class="row"><div class="lbl">Meilensteine melden<small>z. B. „Heute: 1.000 Tage zusammen!“</small></div>
+        <label class="switch"><input type="checkbox" id="sMs" ${D.settings.ms ? 'checked' : ''}><span></span></label></div>
+      <div class="row"><div class="lbl">Test-Benachrichtigung</div><button class="link" id="sTest">Senden</button></div>
+    </div>
+
+    <div class="set-card"><h3>Zählweise</h3>
+      <div class="row"><div class="lbl">Ersten Tag mitzählen<small>Der Tag, an dem ihr zusammengekommen seid, ist „Tag 1“ (wie bei vielen Paar-Apps üblich)</small></div>
+        <label class="switch"><input type="checkbox" id="sPlus" ${D.settings.plus1 ? 'checked' : ''}><span></span></label></div>
+    </div>
+
+    <div class="set-card"><h3>Widget</h3>
+      <div class="row"><div class="lbl">Auf den Startbildschirm<small>Zeigt eure Tage & den nächsten Termin. Alternativ: Startbildschirm lange drücken → Widgets → „Wir zwei“.</small></div><button class="link" id="sWidget">Hinzufügen</button></div>
+    </div>
+
+    <div class="set-card"><h3>Daten</h3>
+      <div class="row"><div class="lbl">Alles zurücksetzen<small>Löscht Namen, Fotos und alle Termine</small></div><button class="link" id="sReset" style="color:var(--danger)">Löschen</button></div>
+    </div>
+    <div class="foot">Wir zwei · Version 1.0<br>Mit ♥ gemacht</div>
+  </div>`;
+  $$('[data-ph]').forEach(a => a.onclick = () => setPhoto(D['p' + a.dataset.ph], renderSettings));
+  $$('[data-name]').forEach(i => i.oninput = () => { D['p' + i.dataset.name].name = i.value.trim(); save(); });
+  $('#sStart').onchange = e => { if (e.target.value) { D.start = e.target.value; save(); toast('Gespeichert 💕'); } };
+  $('#sBg').onclick = () => pickImage(img => { D.bg = fitImg(img, 1100, .78); save(); renderSettings(); toast('Hintergrund gesetzt'); });
+  const bd = $('#sBgDel'); if (bd) bd.onclick = () => { D.bg = null; save(); renderSettings(); };
+  $('#sNotif').onchange = e => {
+    if (e.target.checked && notifState() !== 'granted') { e.target.checked = false; D.settings.notif = true; save(); requestNotif(); return; }
+    D.settings.notif = e.target.checked; save();
+  };
+  $('#sTime').onchange = e => { if (e.target.value) { D.settings.time = e.target.value; save(); toast(`Erinnerungen um ${e.target.value} Uhr`); } };
+  $('#sMs').onchange = e => { D.settings.ms = e.target.checked; save(); };
+  $('#sPlus').onchange = e => { D.settings.plus1 = e.target.checked; save(); toast(e.target.checked ? 'Erster Tag zählt als Tag 1' : 'Erster Tag zählt als Tag 0'); };
+  $('#sTest').onclick = () => { if (notifState() !== 'granted') return requestNotif(); A ? A.testNotif() : toast('Nur in der App verfügbar'); };
+  $('#sWidget').onclick = () => { if (!A || !A.pinWidget()) toast('Bitte über den Startbildschirm hinzufügen: lange drücken → Widgets'); };
+  $('#sReset').onclick = () => confirmSheet('Wirklich alles löschen?', 'Namen, Fotos, Startdatum und alle Termine werden unwiderruflich entfernt.', 'Alles löschen', () => {
+    D = defaults(); save(); closeSheet(); startOnboarding();
+  });
+}
+function requestNotif() {
+  if (!A) return;
+  const s = notifState();
+  if (s === 'blocked') { toast('Bitte Benachrichtigungen in den App-Einstellungen erlauben'); A.openNotifSettings(); return; }
+  A.requestNotif();
+}
+window.onNotifPerm = r => {
+  if (r === 'granted') { D.settings.notif = true; save(); toast('Erinnerungen aktiviert 🔔'); }
+  else toast('Ohne Erlaubnis keine Erinnerungen');
+  if (tab === 'settings') renderSettings();
+};
+
+/* ---------- Sheet ---------- */
+let sheetOpen = false, detailTimer = null;
+function openSheet(html, after) {
+  $('#sheetBody').innerHTML = html; $('#sheet').scrollTop = 0;
+  $('#scrim').classList.add('on'); $('#sheet').classList.add('on'); sheetOpen = true;
+  after && after($('#sheetBody'));
+}
+function closeSheet() {
+  $('#scrim').classList.remove('on'); $('#sheet').classList.remove('on'); sheetOpen = false;
+  clearInterval(detailTimer); document.activeElement && document.activeElement.blur();
+}
+$('#scrim').onclick = closeSheet;
+function confirmSheet(title, text, okLabel, ok) {
+  openSheet(`<h2>${esc(title)}</h2><p class="muted" style="margin:-8px 0 22px">${esc(text)}</p>
+    <div class="btn-row"><button class="btn ghost" id="cNo">Abbrechen</button><button class="btn danger" id="cOk">${esc(okLabel)}</button></div>`, b => {
+    $('#cNo', b).onclick = closeSheet; $('#cOk', b).onclick = ok;
+  });
+}
+
+/* ---------- Detail ---------- */
+function openDetail(id) {
+  const ev = getEvent(id); if (!ev) return;
+  const t = today0(), o = nextOcc(ev, t), n = diff(t, o), orig = pd(ev.date), sub = occLabel(ev, o);
+  const sinceDays = diff(orig, t), r = ymd(orig, t);
+  const remTxt = (ev.remind || []).length ? (ev.remind.map(x => (REMINDS.find(k => k[0] === x) || [0, x + ' Tage'])[1]).join(', ')) : 'keine';
+  openSheet(`
+    <div class="det-top"><div class="det-emoji">${ev.emoji}</div><div class="det-title">${esc(ev.title)}</div>
+      <div class="det-sub">${fmtD(o, {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'})}${sub ? ' · ' + esc(sub) : ''}</div></div>
+    ${n === 0 ? `<div class="today-banner">Heute ist der Tag ✨</div>` : n > 0 ? `<div class="cd-cap">Noch</div><div class="cd" id="cd"></div>` : `<div class="cd-cap">Vergangen</div>`}
+    ${sinceDays > 0 ? `<div class="since-box"><div><b>${fmtN(sinceDays)}</b><span>${ev.kind === 'birthday' ? 'Tage alt' : 'Tage her'}</span></div><div><b>${r.y}</b><span>${r.y === 1 ? 'Jahr' : 'Jahre'}</span></div><div><b>${r.m}</b><span>${r.m === 1 ? 'Monat' : 'Monate'}</span></div><div><b>${r.d}</b><span>${r.d === 1 ? 'Tag' : 'Tage'}</span></div></div>
+      <div class="muted" style="text-align:center;font-size:12px;margin-top:6px">seit dem ${fmtD(orig)}</div>` : ''}
+    ${ev.note ? `<div class="note">${esc(ev.note)}</div>` : ''}
+    <div class="muted" style="font-size:12.5px;margin:16px 2px 14px">🔔 Erinnerung: ${remTxt}${ev.yearly ? ' · 🔁 jährlich' : ''}</div>
+    <div class="btn-row"><button class="btn ghost" id="dEdit">Bearbeiten</button>${ev.locked ? '' : `<button class="btn danger" id="dDel">Löschen</button>`}</div>`, b => {
+    $('#dEdit', b).onclick = () => openEditor(ev.id);
+    const del = $('#dDel', b);
+    if (del) del.onclick = () => confirmSheet(`„${ev.title}“ löschen?`, 'Der Termin und seine Erinnerungen werden entfernt.', 'Löschen', () => {
+      D.events = D.events.filter(e => e.id !== ev.id); save(); closeSheet(); render(); toast('Gelöscht');
+    });
+    if (n === 0) confetti();
+    if (n > 0) {
+      const tick = () => {
+        const cd = $('#cd'); if (!cd) return;
+        let s = Math.max(0, Math.floor((o - new Date()) / 1000));
+        const d = Math.floor(s / 86400); s %= 86400; const h = Math.floor(s / 3600); s %= 3600; const m = Math.floor(s / 60); s %= 60;
+        cd.innerHTML = [[d, 'Tage'], [h, 'Std'], [m, 'Min'], [s, 'Sek']].map(([v, l]) => `<div><b>${pad(v)}</b><span>${l}</span></div>`).join('');
+      };
+      tick(); detailTimer = setInterval(tick, 1000);
+    }
+  });
+}
+function openMilestone(key) {
+  const m = milestones().find(x => x.key === key); if (!m) return;
+  const t = today0(), n = diff(t, m.date);
+  openSheet(`<div class="det-top"><div class="det-emoji">${m.e}</div><div class="det-title">${esc(m.title)}</div>
+    <div class="det-sub">${fmtD(m.date, {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'})}</div></div>
+    ${n === 0 ? `<div class="today-banner">Heute feiert ihr ${esc(m.title)}! 🥂</div>` : n > 0 ? `<div class="cd-cap">Noch</div><div class="cd" id="cd"></div>` :
+      `<div class="today-banner" style="font-size:18px">Geschafft – vor ${plural(-n, 'Tag', 'Tagen')} ✓</div>`}
+    <div class="btn-row" style="margin-top:18px"><button class="btn ghost" id="mClose">Schließen</button></div>`, b => {
+    $('#mClose', b).onclick = closeSheet;
+    if (n === 0) confetti();
+    if (n > 0) {
+      const tick = () => { const cd = $('#cd'); if (!cd) return; let s = Math.max(0, Math.floor((m.date - new Date()) / 1000));
+        const d = Math.floor(s / 86400); s %= 86400; const h = Math.floor(s / 3600); s %= 3600; const mi = Math.floor(s / 60); s %= 60;
+        cd.innerHTML = [[d, 'Tage'], [h, 'Std'], [mi, 'Min'], [s, 'Sek']].map(([v, l]) => `<div><b>${pad(v)}</b><span>${l}</span></div>`).join(''); };
+      tick(); detailTimer = setInterval(tick, 1000);
+    }
+  });
+}
+
+/* ---------- Editor ---------- */
+function openEditor(id) {
+  clearInterval(detailTimer);
+  const ex = id ? getEvent(id) : null;
+  const e = ex ? JSON.parse(JSON.stringify(ex)) : {id: 'e' + Date.now().toString(36), kind: 'birthday', title: '', date: '', emoji: '🎂', yearly: true, remind: [0, 1], note: ''};
+  const locked = !!e.locked;
+  openSheet(`<h2>${ex ? 'Bearbeiten' : 'Neues Datum'}</h2>
+    ${locked ? `<p class="muted" style="margin:-10px 0 16px;font-size:13px">Euer Jahrestag kommt automatisch aus „Zusammen seit“.</p>` : `
+    <div class="field"><span>Art</span><div class="chips" id="eKind">${Object.entries(KINDS).map(([k, v]) => `<button class="chip ${e.kind === k ? 'on' : ''}" data-k="${k}">${v.e} ${v.l}</button>`).join('')}</div></div>`}
+    <label class="field"><span>Titel</span><input class="inp" id="eTitle" maxlength="40" placeholder="z. B. Lenas Geburtstag" value="${esc(e.title)}"></label>
+    <label class="field"><span>Datum</span><input class="inp" type="date" id="eDate" value="${e.date}"></label>
+    ${locked ? '' : `<div class="row" style="padding:4px 2px 14px;border:0;min-height:0"><div class="lbl">Jedes Jahr wiederholen<small>Für Geburtstage & Jahrestage</small></div><label class="switch"><input type="checkbox" id="eYearly" ${e.yearly ? 'checked' : ''}><span></span></label></div>`}
+    <div class="field"><span>Symbol</span><div class="emojis" id="eEmoji">${EMOJIS.map(x => `<button class="${x === e.emoji ? 'on' : ''}">${x}</button>`).join('')}</div></div>
+    <div class="field"><span>Erinnern</span><div class="chips" id="eRem">${REMINDS.map(([v, l]) => `<button class="chip ${e.remind.includes(v) ? 'on' : ''}" data-v="${v}">${l}</button>`).join('')}</div></div>
+    ${locked ? '' : `<label class="field"><span>Notiz (optional)</span><textarea class="inp" id="eNote" maxlength="300" placeholder="Geschenkidee, Erinnerung …">${esc(e.note)}</textarea></label>`}
+    <div class="btn-row"><button class="btn ghost" id="eCancel">Abbrechen</button><button class="btn primary" id="eSave">Speichern</button></div>`, b => {
+    const kindBtns = $$('#eKind .chip', b);
+    kindBtns.forEach(c => c.onclick = () => {
+      kindBtns.forEach(x => x.classList.remove('on')); c.classList.add('on');
+      const k = KINDS[c.dataset.k], prev = KINDS[e.kind];
+      if (!e.emoji || e.emoji === prev.e) { e.emoji = k.e; $$('#eEmoji button', b).forEach(x => x.classList.toggle('on', x.textContent === k.e)); }
+      e.kind = c.dataset.k; e.yearly = k.y; const y = $('#eYearly', b); if (y) y.checked = k.y;
+    });
+    $$('#eEmoji button', b).forEach(x => x.onclick = () => { $$('#eEmoji button', b).forEach(y => y.classList.remove('on')); x.classList.add('on'); e.emoji = x.textContent; });
+    $$('#eRem .chip', b).forEach(c => c.onclick = () => c.classList.toggle('on'));
+    $('#eCancel', b).onclick = closeSheet;
+    $('#eSave', b).onclick = () => {
+      const title = $('#eTitle', b).value.trim(), date = $('#eDate', b).value;
+      if (!title) return toast('Bitte einen Titel eingeben');
+      if (!date) return toast('Bitte ein Datum wählen');
+      const remind = $$('#eRem .chip.on', b).map(c => +c.dataset.v);
+      if (locked) {
+        D.start = date; D.ann = {title, emoji: e.emoji, remind};
+      } else {
+        const ne = {id: e.id, kind: e.kind, title, date, emoji: e.emoji, yearly: $('#eYearly', b).checked, remind, note: $('#eNote', b).value.trim()};
+        const i = D.events.findIndex(x => x.id === e.id);
+        if (i >= 0) D.events[i] = ne; else D.events.push(ne);
+      }
+      save(); closeSheet(); render(); toast('Gespeichert 💕');
+      if (remind.length && D.settings.notif && notifState() !== 'granted') setTimeout(requestNotif, 500);
+    };
+    if (!ex) setTimeout(() => $('#eTitle', b).focus(), 350);
+  });
+}
+
+/* ---------- Onboarding ---------- */
+function startOnboarding() {
+  const o = $('#onb'); o.classList.remove('hidden');
+  const st = {n1: D.p1.name, n2: D.p2.name, start: D.start || '', b1: '', b2: ''};
+  const prog = i => `<div class="progress">${[0, 1, 2, 3].map(k => `<i class="${k === i ? 'on' : ''}"></i>`).join('')}</div>`;
+  const steps = [
+    () => `<div class="onb-step"><div class="logo"><div class="rings">
+        <svg viewBox="0 0 120 120"><circle cx="46" cy="60" r="30" fill="none" stroke="#d9b77d" stroke-width="3"/><circle cx="74" cy="60" r="30" fill="none" stroke="#eaa7b9" stroke-width="3"/></svg></div>
+        <h1 class="serif">Wir zwei</h1><p>Eure gemeinsame Zeit, gezählt.<br>Jeder Tag, jeder Jahrestag, jeder Geburtstag.</p></div>
+        <div class="grow"></div><button class="btn primary block" data-next>Los geht's</button></div>`,
+    () => `<div class="onb-step">${prog(0)}<h1>Wer seid ihr?</h1><p>Tippe auf die Kreise, um Fotos hinzuzufügen.</p>
+        <div class="people" style="padding:0;gap:16px">
+          ${[1, 2].map(i => `<div class="person"><div class="avatar" data-oph="${i}" style="width:110px;height:110px">${avatarHtml(D['p' + i], '+')}<span class="cam"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span></div>
+          <input class="inp" id="on${i}" placeholder="${i === 1 ? 'Dein Name' : 'Name deines Schatzes'}" value="${esc(st['n' + i])}" maxlength="24"></div>`).join('')}
+        </div><div class="grow"></div><button class="btn primary block" data-next>Weiter</button></div>`,
+    () => `<div class="onb-step">${prog(1)}<h1>Seit wann seid ihr zusammen?</h1><p>Ab diesem Tag zählen wir eure gemeinsame Zeit.</p>
+        <input class="inp" type="date" id="oStart" value="${st.start}" style="font-size:18px;padding:16px">
+        <div class="grow"></div><button class="btn primary block" data-next>Weiter</button></div>`,
+    () => `<div class="onb-step">${prog(2)}<h1>Eure Geburtstage</h1><p>Optional – damit du nie wieder einen vergisst.</p>
+        <label class="field"><span>Geburtstag ${esc(st.n1 || 'Person 1')}</span><input class="inp" type="date" id="ob1" value="${st.b1}"></label>
+        <label class="field"><span>Geburtstag ${esc(st.n2 || 'Person 2')}</span><input class="inp" type="date" id="ob2" value="${st.b2}"></label>
+        <div class="grow"></div><button class="btn primary block" data-next>Weiter</button></div>`,
+    () => `<div class="onb-step">${prog(3)}<h1>Erinnerungen</h1><p>Wir erinnern dich rechtzeitig an Geburtstage, Jahrestage und besondere Meilensteine wie „1.000 Tage zusammen“.</p>
+        <div style="font-size:64px;text-align:center;margin:20px 0">🔔</div>
+        <div class="grow"></div><button class="btn primary block" id="oNotif">Erinnerungen erlauben</button>
+        <button class="btn block" style="margin-top:8px;color:var(--muted)" id="oSkip">Später</button></div>`,
+  ];
+  let i = 0;
+  const collect = () => {
+    if (i === 1) { st.n1 = $('#on1').value.trim(); st.n2 = $('#on2').value.trim(); }
+    if (i === 2) st.start = $('#oStart').value;
+    if (i === 3) { st.b1 = $('#ob1').value; st.b2 = $('#ob2').value; }
+  };
+  const finish = () => {
+    D.p1.name = st.n1; D.p2.name = st.n2; D.start = st.start || null;
+    [[st.b1, st.n1], [st.b2, st.n2]].forEach(([b, n], k) => {
+      if (!b) return;
+      const id = 'bday' + (k + 1);
+      D.events = D.events.filter(e => e.id !== id);
+      D.events.push({id, kind: 'birthday', title: !n ? 'Geburtstag' : /[sxzß]$/i.test(n) ? `${n}' Geburtstag` : `${n}s Geburtstag`, date: b, emoji: '🎂', yearly: true, remind: [0, 1, 7], note: ''});
+    });
+    D.onboarded = true; save();
+    o.classList.add('hidden'); go('home');
+  };
+  const show = () => {
+    o.innerHTML = steps[i](); o.scrollTop = 0;
+    const nx = $('[data-next]', o);
+    if (nx) nx.onclick = () => {
+      collect();
+      if (i === 1 && (!st.n1 || !st.n2)) return toast('Bitte beide Namen eingeben');
+      if (i === 2 && !st.start) return toast('Bitte wähle euer Datum');
+      i++; show();
+    };
+    $$('[data-oph]', o).forEach(a => a.onclick = () => { collect(); setPhoto(D['p' + a.dataset.oph], show); });
+    const on = $('#oNotif'); if (on) on.onclick = () => { D.settings.notif = true; finish(); if (A && notifState() !== 'granted') A.requestNotif(); };
+    const sk = $('#oSkip'); if (sk) sk.onclick = () => { D.settings.notif = false; finish(); };
+  };
+  show();
+}
+
+/* ---------- Lifecycle ---------- */
+window.onBack = () => {
+  if (sheetOpen) { closeSheet(); return true; }
+  if (!$('#onb').classList.contains('hidden')) return false;
+  if (tab !== 'home') { go('home'); return true; }
+  return false;
+};
+let lastDay = iso(today0());
+window.onResume = () => { const d = iso(today0()); if (d !== lastDay) { lastDay = d; save(); } render(); };
+setInterval(() => {
+  if (tab === 'home' && D.start && ['seconds', 'minutes', 'hours'].includes(UNITS[D.settings.unit % UNITS.length])) {
+    const c = $('#counter'); if (c) { const dots = $('.dots', c).outerHTML, hint = $('.hint', c).outerHTML; c.innerHTML = counterHtml() + dots + hint; }
+  }
+  const d = iso(today0()); if (d !== lastDay) { lastDay = d; save(); render(); }
+}, 1000);
+
+load();
+if (!D.onboarded) startOnboarding(); else { save(); go('home'); }
+</script>
+</body>
+</html>

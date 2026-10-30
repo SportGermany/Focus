@@ -1,0 +1,50 @@
+name: Love-App APK bauen
+
+on:
+  push:
+    branches: [claude/love-app-apk-scjisn]
+    paths: ['love-app/**', '.github/workflows/love-apk.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: APK bauen
+        run: gradle -p love-app assembleRelease --no-daemon --stacktrace
+
+      - name: APK prüfen
+        run: |
+          APK=love-app/app/build/outputs/apk/release/app-release.apk
+          BT=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -1)
+          $BT/apksigner verify --print-certs "$APK"
+          $BT/aapt2 dump badging "$APK" | head -5
+          cp "$APK" love-app/WirZwei.apk
+          ls -la love-app/WirZwei.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: WirZwei-apk
+          path: love-app/WirZwei.apk
+
+      - name: APK in den Branch legen
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f love-app/WirZwei.apk
+          git commit -m "Love-App: APK gebaut [skip ci]" || exit 0
+          git push origin HEAD:${GITHUB_REF_NAME}
