@@ -217,6 +217,56 @@ textarea.inp{resize:none;min-height:70px}
 .confetti{position:fixed;inset:0;pointer-events:none;z-index:90;overflow:hidden}
 .confetti span{position:absolute;top:-30px;animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+
+/* Dates */
+.date-hero{position:relative;overflow:hidden;border-radius:24px;padding:22px 20px;background:linear-gradient(140deg,#3a2232 0%,#24161f 55%,#1a1218 100%);border:1px solid rgba(234,167,185,.22);margin-bottom:16px}
+.date-hero::after{content:"";position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(234,167,185,.25),transparent 70%)}
+.date-hero h3{font-family:var(--serif);font-weight:400;font-size:24px;margin:6px 0 6px;position:relative;z-index:1}
+.date-hero p{color:var(--muted);margin:0 0 16px;font-size:14px;position:relative;z-index:1}
+.date-hero .btn{position:relative;z-index:1}
+.date-hero.today{background:linear-gradient(140deg,#5a2a40 0%,#3a1d2c 50%,#22141c 100%);border-color:rgba(234,167,185,.45)}
+.prog{height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;margin:4px 0 14px;position:relative;z-index:1}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--rose));border-radius:3px;transition:width .4s}
+.album{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mem{position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/5;background:var(--surface2) center/cover;border:1px solid var(--line);cursor:pointer}
+.mem .fb{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:46px;background:radial-gradient(circle at 30% 20%,#3b2a33,#1a1418)}
+.mem .cap{position:absolute;left:0;right:0;bottom:0;padding:30px 12px 10px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.85))}
+.mem .cap b{display:block;font-weight:500;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mem .cap span{font-size:11.5px;color:var(--muted)}
+.mem .cnt{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.55);border-radius:10px;padding:3px 8px;font-size:11px}
+.hearts{display:flex;gap:6px;justify-content:center;margin:6px 0 4px}
+.hearts button{font-size:30px;filter:grayscale(1) brightness(.6);transition:transform .15s,filter .2s}
+.hearts button.on{filter:none}
+.hearts button:active{transform:scale(1.25)}
+.mini-hearts{color:var(--rose);font-size:11px;letter-spacing:1px}
+.chal{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:16px;background:var(--surface2);border:1px solid var(--line);margin-bottom:8px}
+.chal.done{border-color:rgba(217,183,125,.35);background:linear-gradient(140deg,rgba(217,183,125,.08),rgba(200,102,138,.06))}
+.chal .num{width:28px;height:28px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;background:var(--surface3);color:var(--muted)}
+.chal.done .num{background:linear-gradient(140deg,var(--gold),var(--rose2));color:#2a1420}
+.chal .txt{flex:1;font-size:14px;line-height:1.35}
+.chal .shot{width:52px;height:52px;flex:none;border-radius:12px;background:var(--surface3) center/cover;border:1px solid var(--line2)}
+.chal .acts{display:flex;gap:6px;flex:none}
+.chal .acts button{width:40px;height:40px;border-radius:12px;background:var(--surface3);font-size:18px;display:flex;align-items:center;justify-content:center}
+.chal .acts button.cam{background:linear-gradient(140deg,var(--rose),var(--rose2))}
+.chal .acts button.swap{background:none;width:30px;font-size:15px;opacity:.6}
+.locked{text-align:center;padding:22px 16px;border-radius:18px;border:1px dashed var(--line2);color:var(--muted);margin-bottom:10px}
+.locked .big-ico{font-size:40px;margin-bottom:8px}
+.idea{background:var(--surface2);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:10px;cursor:pointer;transition:border-color .2s}
+.idea.open{border-color:rgba(234,167,185,.45)}
+.idea .top{display:flex;gap:12px;align-items:center}
+.idea .ico{width:48px;height:48px;flex:none;border-radius:14px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:25px}
+.idea .t{font-weight:600;font-size:15.5px}
+.idea .meta{font-size:12px;color:var(--muted);margin-top:2px}
+.idea .why{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.idea .why span{font-size:11.5px;padding:4px 9px;border-radius:999px;background:rgba(217,183,125,.1);color:var(--gold);border:1px solid rgba(217,183,125,.2)}
+.idea .more{margin-top:12px;font-size:14px;color:var(--muted);line-height:1.5}
+.idea .more ul{margin:8px 0 12px;padding-left:18px}
+.idea .more li{margin:3px 0}
+.fav{font-size:20px;flex:none;padding:6px;filter:grayscale(1) brightness(.7)}
+.fav.on{filter:none}
+.step-h{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+.viewer img{width:100%;border-radius:18px;display:block}
+.collage-img{width:100%;border-radius:14px;display:block;box-shadow:0 10px 30px rgba(0,0,0,.5)}
 </style>
 </head>
 <body>
@@ -229,6 +279,9 @@ textarea.inp{resize:none;min-height:70px}
   <section class="screen" id="events"></section>
 
   <!-- MILESTONES -->
+  <section class="screen" id="dates"></section>
+
+  <!-- MILESTONES -->
   <section class="screen" id="miles"></section>
 
   <!-- SETTINGS -->
@@ -239,8 +292,9 @@ textarea.inp{resize:none;min-height:70px}
   <nav>
     <button data-tab="home" class="on"><svg viewBox="0 0 24 24"><path d="M12 20.5l-1.3-1.2C6 15 3 12.3 3 8.9 3 6.2 5.1 4 7.8 4c1.6 0 3.1.7 4.2 1.9C13.1 4.7 14.6 4 16.2 4 18.9 4 21 6.2 21 8.9c0 3.4-3 6.1-7.7 10.4L12 20.5z"/></svg>Wir</button>
     <button data-tab="events"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Termine</button>
-    <button data-tab="miles"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.5 6 .8-4.4 4.2 1.1 6L12 16.6 6.7 19.5l1.1-6L3.4 9.3l6-.8z"/></svg>Meilensteine</button>
-    <button data-tab="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Einstellungen</button>
+    <button data-tab="dates"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><path d="M12 16.6l-.6-.5c-1.9-1.7-3.1-2.8-3.1-4.1 0-1 .8-1.8 1.8-1.8.6 0 1.2.3 1.9.8.7-.5 1.3-.8 1.9-.8 1 0 1.8.8 1.8 1.8 0 1.3-1.2 2.4-3.1 4.1z"/></svg>Dates</button>
+    <button data-tab="miles"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.5 6 .8-4.4 4.2 1.1 6L12 16.6 6.7 19.5l1.1-6L3.4 9.3l6-.8z"/></svg>Meilen&shy;steine</button>
+    <button data-tab="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Mehr</button>
   </nav>
 </div>
 
@@ -250,6 +304,7 @@ textarea.inp{resize:none;min-height:70px}
 <div class="toast" id="toast"></div>
 <input type="file" id="file" accept="image/*" class="hidden">
 
+<script src="ideas.js"></script>
 <script>
 'use strict';
 /* ---------- Bridge & storage ---------- */
@@ -282,6 +337,8 @@ function defaults() {
     bg: null,
     events: [],
     settings: {notif: true, time: '09:00', ms: true, plus1: false, unit: 0},
+    interests: [],
+    favIdeas: [],
     onboarded: false,
   };
 }
@@ -398,10 +455,15 @@ function buildSched() {
         if (dn < 0 || dn > H) return;
         const when = r === 0 ? 'Heute' : r === 1 ? 'Morgen' : `In ${r} Tagen`;
         let body = `${fmtD(o, {weekday: 'long', day: 'numeric', month: 'long'})}${sub ? ' · ' + sub : ''}`;
-        if (r === 0) body = ev.kind === 'birthday' ? `${sub ? ev.title + ' – ' + sub + '. ' : ''}Zeit zum Feiern! 🎉` : (sub ? `${sub} – ` : '') + 'Habt einen wunderschönen Tag 💕';
+        if (ev.kind === 'date') body = r === 0 ? `📸 Heute ist Date-Tag! Eure Foto-Challenges sind freigeschaltet.` : `Freut euch drauf – ${r === 1 ? 'morgen' : 'bald'} ist Date-Zeit 💕`;
+        else if (r === 0) body = ev.kind === 'birthday' ? `${sub ? ev.title + ' – ' + sub + '. ' : ''}Zeit zum Feiern! 🎉` : (sub ? `${sub} – ` : '') + 'Habt einen wunderschönen Tag 💕';
         remind.push({d: iso(nd), t: `${ev.emoji} ${when}: ${ev.title}`, b: body});
       });
     });
+  });
+  D.events.filter(e => e.kind === 'date' && !e.rating).forEach(ev => {
+    const nd = addDays(pd(ev.date), 1), dn = diff(t, nd);
+    if (dn >= 0 && dn <= H) remind.push({d: iso(nd), t: `💭 Wie war euer Date?`, b: `Bewertet „${ev.title}“ und schaut euch eure Fotos an.`});
   });
   if (D.settings.ms) milestones().forEach(m => {
     if (m.kind === 'years') return;
@@ -440,8 +502,9 @@ function confetti() {
 }
 
 /* ---------- Images ---------- */
-function pickImage(cb) {
+function pickImage(cb, capture) {
   const inp = $('#file'); inp.value = '';
+  if (capture) inp.setAttribute('capture', 'environment'); else inp.removeAttribute('capture');
   inp.onchange = () => {
     const f = inp.files && inp.files[0]; if (!f) return;
     const url = URL.createObjectURL(f), img = new Image();
@@ -465,6 +528,34 @@ function fitImg(img, max, q = .8) {
 }
 function setPhoto(p, cb) { pickImage(img => { p.photo = squareImg(img, 480); p.thumb = squareImg(img, 144, .8); save(); cb && cb(); }); }
 
+/* Fotos der Dates liegen als Dateien im App-Speicher (nicht in den Einstellungen) */
+const PH = {
+  cache: new Map(),
+  save(id, data) {
+    this.cache.set(id, data);
+    try { if (A) A.savePhoto(id, data); else localStorage.setItem('ph_' + id, data); } catch (e) { toast('Foto konnte nicht gespeichert werden'); }
+  },
+  get(id) {
+    if (!id) return '';
+    if (this.cache.has(id)) return this.cache.get(id);
+    let d = '';
+    try { d = A ? A.loadPhoto(id) : (localStorage.getItem('ph_' + id) || ''); } catch (e) {}
+    if (d) this.cache.set(id, d);
+    return d;
+  },
+  del(id) {
+    if (!id) return;
+    [id, id + '_t'].forEach(k => { this.cache.delete(k); try { if (A) A.deletePhoto(k); else localStorage.removeItem('ph_' + k); } catch (e) {} });
+  },
+};
+const thumbUrl = id => PH.get(id + '_t') || PH.get(id);
+function storeShot(img) {
+  const id = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  PH.save(id, fitImg(img, 1400, .84));
+  PH.save(id + '_t', squareImg(img, 320, .8));
+  return id;
+}
+
 /* ---------- Navigation ---------- */
 let tab = 'home';
 function go(t) {
@@ -481,6 +572,7 @@ $('#fab').onclick = () => openEditor();
 function render() {
   if (tab === 'home') renderHome();
   else if (tab === 'events') renderEvents();
+  else if (tab === 'dates') renderDates();
   else if (tab === 'miles') renderMiles();
   else if (tab === 'settings') renderSettings();
 }
@@ -533,6 +625,7 @@ function renderHome() {
         <div class="dots">${UNITS.map((_, i) => `<i class="${i === D.settings.unit % UNITS.length ? 'on' : ''}"></i>`).join('')}</div>
         <div class="hint">Tippen zum Umschalten</div>
       </div>
+      ${todayDateBanner()}
       <div class="section-title"><h2>Demnächst</h2><button id="allEv">Alle Termine</button></div>
       ${up.length ? `<div class="list">${up.map(evRowHtml).join('')}</div>` :
         `<div class="empty-cta">Noch keine Termine.<br><button class="btn ghost small" id="addFirst">+ Wichtiges Datum hinzufügen</button></div>`}
@@ -543,6 +636,7 @@ function renderHome() {
   $('#av1').onclick = () => setPhoto(D.p1, renderHome);
   $('#av2').onclick = () => setPhoto(D.p2, renderHome);
   const af = $('#addFirst'); if (af) af.onclick = () => openEditor();
+  bindDateBanner($('#home'));
   bindRows($('#home'));
 }
 function evRowHtml(u) {
@@ -626,6 +720,7 @@ function renderSettings() {
         ${[1, 2].map(i => { const p = D['p' + i]; return `<div class="person"><div class="avatar" data-ph="${i}">${avatarHtml(p, i === 1 ? 'A' : 'B')}<span class="cam"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span></div>
           <input class="inp" data-name="${i}" placeholder="${i === 1 ? 'Name 1' : 'Name 2'}" value="${esc(p.name)}" maxlength="24"></div>`; }).join('')}
       </div>
+      <div class="row"><div class="lbl">Eure Interessen<small>${D.interests.length ? D.interests.map(k => INTERESTS[k].e + ' ' + INTERESTS[k].l).join(' · ') : 'Für passende Date-Ideen'}</small></div><button class="link" id="sInt">Ändern</button></div>
       <div class="row"><div class="lbl">Zusammen seit<small>Euer Start – Grundlage für Zähler & Meilensteine</small></div><input type="date" id="sStart" value="${D.start || ''}"></div>
       <div class="row"><div class="bgprev" style="${D.bg ? `background-image:url(${D.bg})` : ''}"></div><div class="lbl">Hintergrundbild<small>Ein Foto von euch für den Startbildschirm</small></div>
         <button class="link" id="sBg">${D.bg ? 'Ändern' : 'Wählen'}</button>${D.bg ? `<button class="link" id="sBgDel" style="color:var(--muted)">Entfernen</button>` : ''}</div>
@@ -652,10 +747,11 @@ function renderSettings() {
     <div class="set-card"><h3>Daten</h3>
       <div class="row"><div class="lbl">Alles zurücksetzen<small>Löscht Namen, Fotos und alle Termine</small></div><button class="link" id="sReset" style="color:var(--danger)">Löschen</button></div>
     </div>
-    <div class="foot">Wir zwei · Version 1.0<br>Mit ♥ gemacht</div>
+    <div class="foot">Wir zwei · Version 1.1<br>Mit ♥ gemacht</div>
   </div>`;
   $$('[data-ph]').forEach(a => a.onclick = () => setPhoto(D['p' + a.dataset.ph], renderSettings));
   $$('[data-name]').forEach(i => i.oninput = () => { D['p' + i.dataset.name].name = i.value.trim(); save(); });
+  $('#sInt').onclick = () => openInterests(renderSettings);
   $('#sStart').onchange = e => { if (e.target.value) { D.start = e.target.value; save(); toast('Gespeichert 💕'); } };
   $('#sBg').onclick = () => pickImage(img => { D.bg = fitImg(img, 1100, .78); save(); renderSettings(); toast('Hintergrund gesetzt'); });
   const bd = $('#sBgDel'); if (bd) bd.onclick = () => { D.bg = null; save(); renderSettings(); };
@@ -686,8 +782,10 @@ window.onNotifPerm = r => {
 
 /* ---------- Sheet ---------- */
 let sheetOpen = false, detailTimer = null;
-function openSheet(html, after) {
-  $('#sheetBody').innerHTML = html; $('#sheet').scrollTop = 0;
+function openSheet(html, after, keepScroll) {
+  const top = $('#sheet').scrollTop;
+  clearInterval(detailTimer);
+  $('#sheetBody').innerHTML = html; $('#sheet').scrollTop = keepScroll ? top : 0;
   $('#scrim').classList.add('on'); $('#sheet').classList.add('on'); sheetOpen = true;
   after && after($('#sheetBody'));
 }
@@ -706,6 +804,7 @@ function confirmSheet(title, text, okLabel, ok) {
 /* ---------- Detail ---------- */
 function openDetail(id) {
   const ev = getEvent(id); if (!ev) return;
+  if (ev.kind === 'date') return openDate(id);
   const t = today0(), o = nextOcc(ev, t), n = diff(t, o), orig = pd(ev.date), sub = occLabel(ev, o);
   const sinceDays = diff(orig, t), r = ymd(orig, t);
   const remTxt = (ev.remind || []).length ? (ev.remind.map(x => (REMINDS.find(k => k[0] === x) || [0, x + ' Tage'])[1]).join(', ')) : 'keine';
@@ -721,7 +820,7 @@ function openDetail(id) {
     $('#dEdit', b).onclick = () => openEditor(ev.id);
     const del = $('#dDel', b);
     if (del) del.onclick = () => confirmSheet(`„${ev.title}“ löschen?`, 'Der Termin und seine Erinnerungen werden entfernt.', 'Löschen', () => {
-      D.events = D.events.filter(e => e.id !== ev.id); save(); closeSheet(); render(); toast('Gelöscht');
+      deleteEvent(ev); closeSheet(); render(); toast('Gelöscht');
     });
     if (n === 0) confetti();
     if (n > 0) {
@@ -790,12 +889,375 @@ function openEditor(id) {
       } else {
         const ne = {id: e.id, kind: e.kind, title, date, emoji: e.emoji, yearly: $('#eYearly', b).checked, remind, note: $('#eNote', b).value.trim()};
         const i = D.events.findIndex(x => x.id === e.id);
-        if (i >= 0) D.events[i] = ne; else D.events.push(ne);
+        if (i >= 0) D.events[i] = Object.assign({}, D.events[i], ne); else D.events.push(ne);
       }
       save(); closeSheet(); render(); toast('Gespeichert 💕');
       if (remind.length && D.settings.notif && notifState() !== 'granted') setTimeout(requestNotif, 500);
     };
     if (!ex) setTimeout(() => $('#eTitle', b).focus(), 350);
+  });
+}
+
+/* ---------- Dates ---------- */
+const ideaById = id => IDEAS.find(i => i.id === id);
+const dateEvents = () => D.events.filter(e => e.kind === 'date');
+const BUDGET = ['Kostenlos', '€', '€€', '€€€'];
+const DURS = {1: '1–2 Std', 2: 'Halber Tag', 3: 'Ganzer Tag'};
+const TODS = {m: '🌤️ Vormittags', n: '☀️ Nachmittags', a: '🌙 Abends'};
+const PLACES = {any: '✨ Egal', home: '🏠 Zuhause', city: '🏙️ In der Stadt', nature: '🌳 In der Natur'};
+const hearts = n => n ? '♥'.repeat(n) + '<span style="opacity:.3">' + '♥'.repeat(5 - n) + '</span>' : '';
+
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function pickPrompts(ideaId, n = 8) {
+  const idea = ideaById(ideaId), own = idea ? idea.ph.slice() : [];
+  return [...own, ...shuffle(PROMPTS.filter(p => !own.includes(p)))].slice(0, n).map(p => ({p, ph: null}));
+}
+function ensureChallenges(ev) { if (!ev.challenges || !ev.challenges.length) { ev.challenges = pickPrompts(ev.idea); save(); } }
+const shotsOf = ev => (ev.challenges || []).filter(c => c.ph);
+function deleteEvent(ev) {
+  (ev.challenges || []).forEach(c => PH.del(c.ph));
+  D.events = D.events.filter(e => e.id !== ev.id); save();
+}
+function todayDates() { const t = iso(today0()); return dateEvents().filter(e => e.date === t); }
+
+function todayDateBanner() {
+  const ev = todayDates()[0]; if (!ev) return '';
+  ensureChallenges(ev);
+  const done = shotsOf(ev).length, all = ev.challenges.length;
+  return `<div class="date-hero today" data-date="${esc(ev.id)}" style="width:100%;margin:30px 0 0;cursor:pointer">
+    <div class="eyebrow">Heute ist Date-Tag ✨</div><h3>${ev.emoji} ${esc(ev.title)}</h3>
+    <p>${done ? `${done} von ${all} Foto-Challenges geschafft` : `${all} Foto-Challenges sind freigeschaltet`}</p>
+    <div class="prog"><i style="width:${done / all * 100}%"></i></div>
+    <button class="btn primary small">📸 Zu den Challenges</button></div>`;
+}
+function bindDateBanner(root) { $$('[data-date]', root).forEach(el => el.onclick = () => openDate(el.dataset.date)); }
+
+function renderDates() {
+  const t = today0(), all = dateEvents();
+  const todays = all.filter(e => diff(t, pd(e.date)) === 0);
+  const fut = all.filter(e => diff(t, pd(e.date)) > 0).sort((a, b) => pd(a.date) - pd(b.date));
+  const past = all.filter(e => diff(t, pd(e.date)) < 0).sort((a, b) => pd(b.date) - pd(a.date));
+  const unrated = past.filter(e => !e.rating).slice(0, 2);
+  const memories = [...todays, ...past];
+  $('#dates').innerHTML = `<div class="page">
+    <div class="eyebrow">Zeit zu zweit</div><h1>Dates</h1>
+    <p class="lead">Planen, erleben, festhalten.</p>
+    ${todays.map(ev => { ensureChallenges(ev); const d = shotsOf(ev).length, n = ev.challenges.length;
+      return `<div class="date-hero today" data-date="${esc(ev.id)}"><div class="eyebrow">Heute ✨</div><h3>${ev.emoji} ${esc(ev.title)}</h3>
+        <p>${d} von ${n} Foto-Challenges</p><div class="prog"><i style="width:${d / n * 100}%"></i></div><button class="btn primary small">📸 Los geht's</button></div>`; }).join('')}
+    <div class="date-hero"><div class="eyebrow">Date-Planer</div><h3>Was machen wir als Nächstes?</h3>
+      <p>Sagt mir, wann, wo und worauf ihr Lust habt – ich schlage euch Dates vor, die zu euch passen.</p>
+      <button class="btn primary" id="planBtn">✨ Date planen</button></div>
+    ${unrated.map(ev => `<div class="ev" data-date="${esc(ev.id)}"><div class="ico">💭</div><div class="mid"><div class="t">Wie war „${esc(ev.title)}“?</div><div class="s">Tippen zum Bewerten</div></div><div class="right"><div class="n" style="font-size:18px">☆</div></div></div>`).join('')}
+    ${fut.length ? `<div class="group-h">Geplant</div><div class="list">${fut.map(ev => { const n = diff(t, pd(ev.date));
+      return `<div class="ev" data-date="${esc(ev.id)}"><div class="ico">${ev.emoji}</div><div class="mid"><div class="t">${esc(ev.title)}</div><div class="s">${fmtW(pd(ev.date))}${ev.tod ? ' · ' + TODS[ev.tod].slice(3) : ''}</div></div>
+        <div class="right"><div class="n">${fmtN(n)}</div><div class="u">${n === 1 ? 'Tag' : 'Tage'}</div></div></div>`; }).join('')}</div>` : ''}
+    <div class="group-h">Unsere Dates</div>
+    ${memories.length ? `<div class="album">${memories.map(ev => { const sh = shotsOf(ev), cover = sh.length ? thumbUrl(sh[0].ph) : '';
+      return `<div class="mem" data-date="${esc(ev.id)}" ${cover ? `style="background-image:url(${cover})"` : ''}>${cover ? '' : `<div class="fb">${ev.emoji}</div>`}
+        ${sh.length ? `<div class="cnt">📸 ${sh.length}</div>` : ''}<div class="cap"><b>${esc(ev.title)}</b><span>${fmtD(pd(ev.date), {day: 'numeric', month: 'short', year: 'numeric'})}</span>
+        ${ev.rating ? `<div class="mini-hearts">${hearts(ev.rating)}</div>` : ''}</div></div>`; }).join('')}</div>`
+      : `<div class="empty-cta">Hier sammeln sich eure Dates mit Fotos und Bewertungen.</div>`}
+    <div class="set-card" style="margin-top:22px">
+      <div class="row" id="browseIdeas" style="cursor:pointer"><div class="lbl">💡 Alle Date-Ideen<small>${IDEAS.length} Ideen · ${D.favIdeas.length} auf eurer Wunschliste</small></div><span class="muted">›</span></div>
+      <div class="row" id="editInt" style="cursor:pointer"><div class="lbl">🎯 Eure Interessen<small>${D.interests.length ? D.interests.map(k => INTERESTS[k].e).join(' ') : 'Noch nicht festgelegt'}</small></div><span class="muted">›</span></div>
+    </div>
+    <div style="height:10px"></div></div>`;
+  $('#planBtn').onclick = () => openPlanner();
+  $('#browseIdeas').onclick = () => openIdeaBrowser();
+  $('#editInt').onclick = () => openInterests(renderDates);
+  bindDateBanner($('#dates'));
+}
+
+/* ----- Interessen ----- */
+function openInterests(done, intro) {
+  const sel = new Set(D.interests);
+  openSheet(`<h2>${intro ? 'Was macht ihr gerne?' : 'Eure Interessen'}</h2>
+    <p class="muted" style="margin:-10px 0 18px;font-size:14px">Wählt alles, was euch beiden Spaß macht – daraus entstehen eure Date-Vorschläge.</p>
+    <div class="chips" id="intChips">${Object.entries(INTERESTS).map(([k, v]) => `<button class="chip ${sel.has(k) ? 'on' : ''}" data-k="${k}">${v.e} ${v.l}</button>`).join('')}</div>
+    <div class="btn-row" style="margin-top:22px"><button class="btn primary" id="intOk">${intro ? 'Weiter' : 'Speichern'}</button></div>`, b => {
+    $$('#intChips .chip', b).forEach(c => c.onclick = () => { c.classList.toggle('on'); sel.has(c.dataset.k) ? sel.delete(c.dataset.k) : sel.add(c.dataset.k); });
+    $('#intOk', b).onclick = () => { D.interests = [...sel]; save(); if (intro) done(); else { closeSheet(); done && done(); toast('Gespeichert 💕'); } };
+  });
+}
+
+/* ----- Planer ----- */
+function nextSaturday() { const t = today0(); return addDays(t, (6 - t.getDay() + 7) % 7); }
+let P = null;
+function recommend(f, n = 6) {
+  const t = today0();
+  const past = dateEvents().filter(e => pd(e.date) <= t).sort((a, b) => pd(b.date) - pd(a.date));
+  const recent = past.slice(0, 6).map(e => e.idea);
+  const tagRatings = {};
+  past.filter(e => e.rating).forEach(e => { const i = ideaById(e.idea); if (i) i.tags.forEach(tg => (tagRatings[tg] = tagRatings[tg] || []).push(e.rating)); });
+  const ok = i => i.b <= f.budget && !(f.weather === 'rain' && !i.rain);
+  let c = IDEAS.filter(i => ok(i) && i.d <= f.dur && (f.place === 'any' || i.place === f.place));
+  if (c.length < 4) c = IDEAS.filter(i => ok(i) && (f.place === 'any' || i.place === f.place));
+  if (c.length < 4) c = IDEAS.filter(ok);
+  const last = past[0] && ideaById(past[0].idea);
+  return c.map(i => {
+    let s = 0; const why = [];
+    const im = i.tags.filter(tg => D.interests.includes(tg));
+    s += im.length * 3; if (im.length) why.push(im.map(tg => INTERESTS[tg].e + ' ' + INTERESTS[tg].l).join(' · '));
+    const mm = i.mood.filter(m => f.moods.includes(m));
+    s += mm.length * 2.2; if (mm.length) why.push(mm.map(m => MOODS[m].e + ' ' + MOODS[m].l).join(' · '));
+    if (!i.tod.includes(f.tod)) s -= 3;
+    if (i.d < f.dur - 1) s -= .6;
+    const ri = recent.indexOf(i.id);
+    if (ri >= 0) s -= ri < 2 ? 10 : 6;
+    else if (!past.some(e => e.idea === i.id)) { s += 1; why.push('✨ Neu für euch'); }
+    if (last && last.tags[0] === i.tags[0]) s -= 1.5;
+    i.tags.forEach(tg => { const r = tagRatings[tg]; if (r) s += (r.reduce((a, b) => a + b, 0) / r.length - 3) * .8; });
+    const liked = past.find(e => e.rating >= 4 && e.idea !== i.id && ideaById(e.idea) && ideaById(e.idea).tags.some(tg => i.tags.includes(tg)));
+    if (liked) { s += 1; why.unshift(`💞 Weil euch „${liked.title}“ gefallen hat`); }
+    if (D.favIdeas.includes(i.id)) { s += 2; why.unshift('♥ Auf eurer Wunschliste'); }
+    s += Math.random() * 1.6;
+    return {i, s, why: why.slice(0, 3)};
+  }).sort((a, b) => b.s - a.s).slice(0, n);
+}
+function openPlanner() {
+  if (!D.interests.length) return openInterests(() => openPlanner(), true);
+  P = {step: 1, date: iso(nextSaturday()), tod: 'a', dur: 2, place: 'any', weather: 'sun', budget: 2, moods: [], res: null, open: null};
+  plannerStep();
+}
+function chipRow(key, opts, multi) {
+  return `<div class="chips" data-key="${key}">${Object.entries(opts).map(([v, l]) => {
+    const on = multi ? P[key].includes(v) : String(P[key]) === String(v);
+    return `<button class="chip ${on ? 'on' : ''}" data-v="${v}">${l}</button>`; }).join('')}</div>`;
+}
+function bindChips(b) {
+  $$('.chips[data-key]', b).forEach(row => {
+    const key = row.dataset.key, multi = Array.isArray(P[key]);
+    $$('.chip', row).forEach(c => c.onclick = () => {
+      let v = c.dataset.v; if (typeof P[key] === 'number') v = +v;
+      if (multi) { const i = P[key].indexOf(v); i >= 0 ? P[key].splice(i, 1) : P[key].push(v); c.classList.toggle('on'); }
+      else { P[key] = v; $$('.chip', row).forEach(x => x.classList.toggle('on', x === c)); }
+    });
+  });
+}
+function plannerStep() {
+  const prog = `<div class="progress" style="margin:0 0 14px">${[1, 2, 3, 4].map(k => `<i class="${k === P.step ? 'on' : ''}"></i>`).join('')}</div>`;
+  const nav = (next = 'Weiter') => `<div class="btn-row" style="margin-top:22px">${P.step > 1 ? '<button class="btn ghost" id="pBack">Zurück</button>' : ''}<button class="btn primary" id="pNext">${next}</button></div>`;
+  let html = '';
+  if (P.step === 1) html = `${prog}<div class="step-h">Schritt 1 von 3</div><h2>Wann habt ihr Zeit?</h2>
+    <label class="field"><span>Datum</span><input class="inp" type="date" id="pDate" value="${P.date}" min="${iso(today0())}"></label>
+    <div class="field"><span>Tageszeit</span>${chipRow('tod', TODS)}</div>
+    <div class="field"><span>Wie viel Zeit?</span>${chipRow('dur', DURS)}</div>${nav()}`;
+  else if (P.step === 2) html = `${prog}<div class="step-h">Schritt 2 von 3</div><h2>Wo & wie?</h2>
+    <div class="field"><span>Wo?</span>${chipRow('place', PLACES)}</div>
+    <div class="field"><span>Wetter</span>${chipRow('weather', {sun: '☀️ Schön', rain: '🌧️ Regen / kalt'})}</div>
+    <div class="field"><span>Budget</span>${chipRow('budget', {0: '🆓 Kostenlos', 1: '€ Günstig', 2: '€€ Normal', 3: '€€€ Gönnen'})}</div>${nav()}`;
+  else if (P.step === 3) html = `${prog}<div class="step-h">Schritt 3 von 3</div><h2>Worauf habt ihr Lust?</h2>
+    <p class="muted" style="margin:-10px 0 16px;font-size:14px">Mehrere möglich – oder nichts, dann lasst euch überraschen.</p>
+    ${chipRow('moods', Object.fromEntries(Object.entries(MOODS).map(([k, v]) => [k, v.e + ' ' + v.l])), true)}${nav('✨ Ideen finden')}`;
+  else {
+    if (!P.res) P.res = recommend(P);
+    html = `${prog}<div class="step-h">${fmtW(pd(P.date))} · ${TODS[P.tod].slice(3)}</div><h2>Eure Date-Ideen</h2>
+      ${P.res.map(({i, why}) => ideaCard(i, why, P.open === i.id, true)).join('')}
+      <button class="btn ghost block" id="pCustom" style="margin-bottom:8px">✏️ Eigene Idee eintragen</button>
+      <div class="btn-row"><button class="btn ghost" id="pBack">Zurück</button><button class="btn ghost" id="pShuffle">🔀 Neue Vorschläge</button></div>`;
+  }
+  openSheet(html, b => {
+    bindChips(b);
+    const d = $('#pDate', b); if (d) d.onchange = () => { if (d.value) P.date = d.value; };
+    const bk = $('#pBack', b); if (bk) bk.onclick = () => { P.step--; P.res = null; plannerStep(); };
+    const nx = $('#pNext', b); if (nx) nx.onclick = () => { if (P.step === 1 && !P.date) return toast('Bitte ein Datum wählen'); P.step++; plannerStep(); };
+    const sh = $('#pShuffle', b); if (sh) sh.onclick = () => { const seen = new Set(P.res.map(r => r.i.id)); const r = recommend(P, 12); P.res = [...r.filter(x => !seen.has(x.i.id)), ...r.filter(x => seen.has(x.i.id))].slice(0, 6); P.open = null; plannerStep(); };
+    const cu = $('#pCustom', b); if (cu) cu.onclick = () => customDate();
+    bindIdeaCards(b, () => plannerStep(), id => planIdea(ideaById(id)));
+  }, P.step === 4 && P.open !== null);
+}
+function ideaCard(i, why, open, planBtn) {
+  return `<div class="idea ${open ? 'open' : ''}" data-idea="${i.id}">
+    <div class="top"><div class="ico">${i.e}</div><div style="flex:1;min-width:0"><div class="t">${esc(i.t)}</div>
+      <div class="meta">${PLACES[i.place].slice(3)} · ${DURS[i.d]} · ${BUDGET[i.b]}</div></div>
+      <button class="fav ${D.favIdeas.includes(i.id) ? 'on' : ''}" data-fav="${i.id}" aria-label="Wunschliste">💗</button></div>
+    ${why && why.length ? `<div class="why">${why.map(w => `<span>${esc(w)}</span>`).join('')}</div>` : ''}
+    ${open ? `<div class="more">${esc(i.desc)}<div style="margin-top:12px;color:var(--gold);font-size:11px;letter-spacing:.16em;text-transform:uppercase">Foto-Challenges (Auswahl)</div>
+      <ul>${i.ph.map(p => `<li>📸 ${esc(p)}</li>`).join('')}</ul>
+      ${planBtn ? `<button class="btn primary block" data-plan="${i.id}">💕 Dieses Date planen</button>` : ''}</div>` : ''}
+  </div>`;
+}
+function bindIdeaCards(b, rerender, onPlan) {
+  $$('.idea', b).forEach(c => c.onclick = e => {
+    if (e.target.closest('[data-fav]') || e.target.closest('[data-plan]')) return;
+    if (P) P.open = P.open === c.dataset.idea ? null : c.dataset.idea;
+    rerender(c.dataset.idea);
+  });
+  $$('[data-fav]', b).forEach(f => f.onclick = () => {
+    const id = f.dataset.fav, i = D.favIdeas.indexOf(id);
+    if (i >= 0) D.favIdeas.splice(i, 1); else { D.favIdeas.push(id); toast('Auf die Wunschliste gesetzt 💗'); }
+    f.classList.toggle('on'); save();
+  });
+  $$('[data-plan]', b).forEach(p => p.onclick = () => onPlan(p.dataset.plan));
+}
+function planIdea(idea, title, emoji) {
+  const ev = {id: 'd' + Date.now().toString(36), kind: 'date', title: title || idea.t, emoji: emoji || idea.e, date: P.date, yearly: false,
+              remind: [0, 1], note: '', idea: idea ? idea.id : null, tod: P.tod, challenges: pickPrompts(idea ? idea.id : null), rating: 0, memo: ''};
+  D.events.push(ev); save(); P = null;
+  confetti(); toast('Date geplant 💕');
+  openDate(ev.id);
+  render();
+  if (D.settings.notif && notifState() !== 'granted') setTimeout(requestNotif, 800);
+}
+function customDate() {
+  openSheet(`<h2>Eigene Date-Idee</h2>
+    <label class="field"><span>Was habt ihr vor?</span><input class="inp" id="cTitle" maxlength="40" placeholder="z. B. Abendessen bei Luigi"></label>
+    <div class="field"><span>Symbol</span><div class="emojis" id="cEmoji">${EMOJIS.map((x, k) => `<button class="${k === 4 ? 'on' : ''}">${x}</button>`).join('')}</div></div>
+    <div class="btn-row"><button class="btn ghost" id="cBack">Zurück</button><button class="btn primary" id="cOk">Planen</button></div>`, b => {
+    let em = EMOJIS[4];
+    $$('#cEmoji button', b).forEach(x => x.onclick = () => { $$('#cEmoji button', b).forEach(y => y.classList.remove('on')); x.classList.add('on'); em = x.textContent; });
+    $('#cBack', b).onclick = () => plannerStep();
+    $('#cOk', b).onclick = () => { const t = $('#cTitle', b).value.trim(); if (!t) return toast('Bitte beschreibe euer Date'); planIdea(null, t, em); };
+    setTimeout(() => $('#cTitle', b).focus(), 300);
+  });
+}
+function openIdeaBrowser(filter = 'all', openId = null) {
+  P = P || {open: null}; P.open = openId;
+  const list = filter === 'fav' ? IDEAS.filter(i => D.favIdeas.includes(i.id)) : IDEAS;
+  openSheet(`<h2>Date-Ideen</h2>
+    <div class="seg" style="margin:-6px 0 14px"><button data-f="all" class="${filter === 'all' ? 'on' : ''}">Alle (${IDEAS.length})</button><button data-f="fav" class="${filter === 'fav' ? 'on' : ''}">💗 Wunschliste (${D.favIdeas.length})</button></div>
+    ${list.length ? list.map(i => ideaCard(i, null, openId === i.id, true)).join('') : '<div class="empty-cta">Tippe bei einer Idee auf 💗, um sie auf eure Wunschliste zu setzen.</div>'}`, b => {
+    $$('.seg button', b).forEach(x => x.onclick = () => openIdeaBrowser(x.dataset.f));
+    bindIdeaCards(b, id => openIdeaBrowser(filter, openId === id ? null : id), id => {
+      P = {step: 1, date: iso(nextSaturday()), tod: 'a', dur: 3, place: 'any', weather: 'sun', budget: 3, moods: [], res: null, open: null};
+      pickDateFor(ideaById(id));
+    });
+  }, true);
+}
+function pickDateFor(idea) {
+  openSheet(`<div class="det-top"><div class="det-emoji">${idea.e}</div><div class="det-title">${esc(idea.t)}</div></div>
+    <label class="field" style="margin-top:18px"><span>Wann?</span><input class="inp" type="date" id="qDate" value="${P.date}" min="${iso(today0())}"></label>
+    <div class="field"><span>Tageszeit</span>${chipRow('tod', TODS)}</div>
+    <div class="btn-row"><button class="btn ghost" id="qBack">Zurück</button><button class="btn primary" id="qOk">💕 Planen</button></div>`, b => {
+    bindChips(b);
+    $('#qBack', b).onclick = () => openIdeaBrowser();
+    $('#qOk', b).onclick = () => { const v = $('#qDate', b).value; if (!v) return toast('Bitte ein Datum wählen'); P.date = v; planIdea(idea); };
+  });
+}
+
+/* ----- Date-Ansicht mit Foto-Challenges ----- */
+function openDate(id, keep) {
+  const ev = getEvent(id); if (!ev) return closeSheet();
+  ensureChallenges(ev);
+  const t = today0(), d = pd(ev.date), n = diff(t, d), idea = ideaById(ev.idea);
+  const done = shotsOf(ev).length, all = ev.challenges.length;
+  const unlocked = n <= 0;
+  openSheet(`
+    <div class="det-top"><div class="det-emoji">${ev.emoji}</div><div class="det-title">${esc(ev.title)}</div>
+      <div class="det-sub">${fmtD(d, {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'})}${ev.tod ? ' · ' + TODS[ev.tod].slice(3) : ''}</div></div>
+    ${n > 0 ? `<div class="cd-cap">Noch</div><div class="cd" id="cd"></div>` : n === 0 ? `<div class="today-banner">Heute ist euer Date ✨</div>` : ''}
+    ${idea ? `<div class="note" style="font-style:normal;font-family:var(--sans);font-size:14px">${esc(idea.desc)}</div>` : ''}
+    <div class="section-title" style="margin:24px 0 8px"><h2>📸 Foto-Challenges</h2><span class="muted" style="font-size:13px">${done}/${all}</span></div>
+    ${unlocked ? `<div class="prog"><i style="width:${done / all * 100}%"></i></div>
+      ${ev.challenges.map((c, k) => `<div class="chal ${c.ph ? 'done' : ''}">
+        <div class="num">${c.ph ? '✓' : k + 1}</div><div class="txt">${esc(c.p)}</div>
+        ${c.ph ? `<div class="shot" data-view="${k}" style="background-image:url(${thumbUrl(c.ph)})"></div>` :
+          `<div class="acts"><button class="swap" data-swap="${k}" aria-label="Andere Challenge">🔀</button><button data-gal="${k}" aria-label="Galerie">🖼️</button><button class="cam" data-cam="${k}" aria-label="Kamera">📷</button></div>`}
+      </div>`).join('')}
+      <button class="btn ghost block small" id="addChal" style="margin:4px 0 6px">+ Eigene Challenge</button>`
+    : `<div class="locked"><div class="big-ico">🔒</div><b style="color:var(--text)">${all} Foto-Challenges warten auf euch</b><br>
+        <span style="font-size:13px">Sie werden am Date-Tag freigeschaltet – lasst euch überraschen!</span></div>`}
+    ${n <= 0 ? `<div class="section-title" style="margin:22px 0 4px"><h2>Wie war's?</h2></div>
+      <div class="hearts" id="rate">${[1, 2, 3, 4, 5].map(k => `<button data-r="${k}" class="${ev.rating >= k ? 'on' : ''}">❤️</button>`).join('')}</div>
+      <textarea class="inp" id="memo" maxlength="400" placeholder="Was war der schönste Moment?" style="margin-top:10px">${esc(ev.memo || '')}</textarea>` : ''}
+    <div class="btn-row" style="margin-top:18px">${done ? `<button class="btn primary" id="mkCollage">🖼️ Collage erstellen</button>` : ''}</div>
+    <div class="btn-row"><button class="btn ghost" id="dEdit">Bearbeiten</button><button class="btn danger" id="dDel">Löschen</button></div>`, b => {
+    const refresh = () => { openDate(id, true); if (tab === 'dates' || tab === 'home') render(); };
+    $$('[data-cam]', b).forEach(x => x.onclick = () => pickImage(img => { ev.challenges[+x.dataset.cam].ph = storeShot(img); save(); toast('📸 Challenge geschafft!'); maybeAllDone(ev); refresh(); }, true));
+    $$('[data-gal]', b).forEach(x => x.onclick = () => pickImage(img => { ev.challenges[+x.dataset.gal].ph = storeShot(img); save(); maybeAllDone(ev); refresh(); }));
+    $$('[data-swap]', b).forEach(x => x.onclick = () => {
+      const used = new Set(ev.challenges.map(c => c.p)), pool = shuffle(PROMPTS.filter(p => !used.has(p)));
+      if (pool.length) { ev.challenges[+x.dataset.swap].p = pool[0]; save(); openDate(id, true); }
+    });
+    $$('[data-view]', b).forEach(x => x.onclick = () => viewShot(ev, +x.dataset.view));
+    const ac = $('#addChal', b); if (ac) ac.onclick = () => openSheet(`<h2>Eigene Challenge</h2>
+      <label class="field"><span>Was sollt ihr fotografieren?</span><input class="inp" id="ownCh" maxlength="80" placeholder="z. B. Ein Foto mit unserem Lieblingseis"></label>
+      <div class="btn-row"><button class="btn ghost" id="ownBack">Zurück</button><button class="btn primary" id="ownOk">Hinzufügen</button></div>`, bb => {
+        $('#ownBack', bb).onclick = () => openDate(id);
+        $('#ownOk', bb).onclick = () => { const v = $('#ownCh', bb).value.trim(); if (!v) return toast('Bitte etwas eingeben'); ev.challenges.push({p: v, ph: null}); save(); openDate(id); };
+        setTimeout(() => $('#ownCh', bb).focus(), 300);
+      });
+    $$('#rate button', b).forEach(x => x.onclick = () => { ev.rating = +x.dataset.r; save(); $$('#rate button', b).forEach(y => y.classList.toggle('on', +y.dataset.r <= ev.rating)); if (ev.rating === 5) confetti(); render(); });
+    const me = $('#memo', b); if (me) me.onchange = () => { ev.memo = me.value.trim(); save(); };
+    const mc = $('#mkCollage', b); if (mc) mc.onclick = () => showCollage(ev);
+    $('#dEdit', b).onclick = () => openEditor(ev.id);
+    $('#dDel', b).onclick = () => confirmSheet(`„${ev.title}“ löschen?`, 'Das Date mit allen Fotos wird entfernt.', 'Löschen', () => { deleteEvent(ev); closeSheet(); render(); toast('Gelöscht'); });
+    if (n > 0) {
+      const target = new Date(d.getFullYear(), d.getMonth(), d.getDate(), ev.tod === 'a' ? 19 : ev.tod === 'n' ? 14 : ev.tod === 'm' ? 10 : 0);
+      const tick = () => { const cd = $('#cd'); if (!cd) return; let s = Math.max(0, Math.floor((target - new Date()) / 1000));
+        const dd = Math.floor(s / 86400); s %= 86400; const h = Math.floor(s / 3600); s %= 3600; const mi = Math.floor(s / 60); s %= 60;
+        cd.innerHTML = [[dd, 'Tage'], [h, 'Std'], [mi, 'Min'], [s, 'Sek']].map(([v, l]) => `<div><b>${pad(v)}</b><span>${l}</span></div>`).join(''); };
+      tick(); detailTimer = setInterval(tick, 1000);
+    }
+  }, keep);
+}
+function maybeAllDone(ev) { if (shotsOf(ev).length === ev.challenges.length) { confetti(); setTimeout(() => toast('Alle Challenges geschafft! 🏆'), 400); } }
+function viewShot(ev, k) {
+  const c = ev.challenges[k];
+  openSheet(`<div class="viewer"><img src="${PH.get(c.ph)}" alt=""></div>
+    <p style="text-align:center;font-family:var(--serif);font-size:18px;margin:14px 0">${esc(c.p)}</p>
+    <div class="btn-row"><button class="btn ghost" id="vBack">Zurück</button><button class="btn ghost" id="vRe">Neu aufnehmen</button><button class="btn danger" id="vDel">Entfernen</button></div>`, b => {
+    $('#vBack', b).onclick = () => openDate(ev.id);
+    $('#vRe', b).onclick = () => pickImage(img => { PH.del(c.ph); c.ph = storeShot(img); save(); openDate(ev.id); render(); }, true);
+    $('#vDel', b).onclick = () => { PH.del(c.ph); c.ph = null; save(); openDate(ev.id); render(); };
+  });
+}
+
+/* ----- Polaroid-Collage ----- */
+function loadImg(src) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }); }
+function wrapText(ctx, text, maxW) {
+  const words = text.split(' '), lines = []; let line = '';
+  words.forEach(w => { const tt = line ? line + ' ' + w : w; if (ctx.measureText(tt).width > maxW && line) { lines.push(line); line = w; } else line = tt; });
+  if (line) lines.push(line); return lines.slice(0, 2);
+}
+async function makeCollage(ev) {
+  const shots = shotsOf(ev).slice(0, 6), W = 1080, H = 1350;
+  await Promise.all(['600 64px Playfair', 'italic 400 34px Playfair', '500 26px Inter'].map(f => document.fonts.load(f).catch(() => {})));
+  const imgs = await Promise.all(shots.map(c => loadImg(PH.get(c.ph))));
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const x = cv.getContext('2d');
+  const g = x.createRadialGradient(W / 2, 0, 50, W / 2, H * .3, H); g.addColorStop(0, '#3a2232'); g.addColorStop(.5, '#1c121a'); g.addColorStop(1, '#0d0a0e');
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  x.textAlign = 'center'; x.fillStyle = '#d9b77d'; x.font = '500 22px Inter';
+  x.fillText([...'UNSER DATE'].join(' '), W / 2, 88);
+  x.fillStyle = '#f4ecef'; x.font = '600 60px Playfair';
+  x.fillText(`${ev.title}`, W / 2, 162, W - 120);
+  x.fillStyle = '#a9979f'; x.font = 'italic 400 30px Playfair';
+  x.fillText(fmtD(pd(ev.date), {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'}), W / 2, 210);
+  const n = imgs.length, cols = n === 1 ? 1 : 2, rows = Math.ceil(n / cols);
+  const top = 250, bottom = H - 120, cw = (W - 80) / cols, ch = (bottom - top) / rows;
+  const size = Math.min(cw * .86, ch * .84 / 1.18);
+  imgs.forEach((im, k) => {
+    const r = Math.floor(k / cols), cIdx = k % cols, offset = (n % 2 === 1 && k === n - 1 && cols === 2) ? cw / 2 : 0;
+    const cx = 40 + cw * cIdx + cw / 2 + offset, cy = top + ch * r + ch / 2;
+    const pw = size, phh = size * 1.18, border = size * .055;
+    x.save(); x.translate(cx, cy); x.rotate(((k * 37) % 9 - 4) * Math.PI / 180);
+    x.shadowColor = 'rgba(0,0,0,.55)'; x.shadowBlur = 30; x.shadowOffsetY = 12;
+    x.fillStyle = '#fbf6f0'; x.fillRect(-pw / 2, -phh / 2, pw, phh); x.shadowColor = 'transparent';
+    const inner = pw - border * 2, s = Math.min(im.naturalWidth, im.naturalHeight);
+    x.drawImage(im, (im.naturalWidth - s) / 2, (im.naturalHeight - s) / 2, s, s, -pw / 2 + border, -phh / 2 + border, inner, inner);
+    x.fillStyle = '#4a3a40'; x.font = `italic 400 ${Math.round(size * .055)}px Playfair`;
+    const lines = wrapText(x, shots[k].p, inner - 10), capTop = -phh / 2 + border + inner, capH = phh - border - inner;
+    lines.forEach((l, li) => x.fillText(l, 0, capTop + capH / 2 + (li - (lines.length - 1) / 2) * size * .07 + size * .018));
+    x.restore();
+  });
+  x.fillStyle = '#eaa7b9'; x.font = 'italic 400 30px Playfair';
+  x.fillText(`${D.p1.name || 'Du'} & ${D.p2.name || 'Ich'}${D.start ? `  ♥  Tag ${fmtN(Math.max(0, dayCount(pd(ev.date))))}` : '  ♥'}`, W / 2, H - 56);
+  return cv.toDataURL('image/jpeg', .9);
+}
+async function showCollage(ev) {
+  toast('Collage wird erstellt …');
+  let url;
+  try { url = await makeCollage(ev); } catch (e) { console.error(e); return toast('Collage fehlgeschlagen'); }
+  openSheet(`<h2>Eure Collage</h2><img class="collage-img" src="${url}" alt="">
+    <div class="btn-row" style="margin-top:16px"><button class="btn ghost" id="colSave">Speichern</button><button class="btn primary" id="colShare">Teilen</button></div><div class="btn-row"><button class="btn ghost" id="colBack">Zurück zum Date</button></div>`, b => {
+    $('#colBack', b).onclick = () => openDate(ev.id);
+    $('#colSave', b).onclick = () => {
+      if (!A) { const a = document.createElement('a'); a.href = url; a.download = 'wir-zwei-date.jpg'; a.click(); return; }
+      toast(A.saveImage(url) ? 'In der Galerie gespeichert 💾' : 'Speichern nicht möglich');
+    };
+    $('#colShare', b).onclick = () => { if (!A || !A.shareImage(url)) toast('Teilen nicht möglich'); };
   });
 }
 

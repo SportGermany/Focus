@@ -4,12 +4,15 @@ import android.app.Activity;
 import android.app.NotificationManager;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.provider.Settings;
+import android.util.Base64;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -18,13 +21,20 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+
 public class MainActivity extends Activity {
     private static final int REQ_FILE = 1;
     private static final int REQ_NOTIF = 2;
+    private static final int REQ_CAMERA = 3;
     private static final String NOTIF_PERM = "android.permission.POST_NOTIFICATIONS";
 
     private WebView web;
     private ValueCallback<Uri[]> fileCallback;
+    private Uri cameraUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +69,7 @@ public class MainActivity extends Activity {
             public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
                 if (fileCallback != null) fileCallback.onReceiveValue(null);
                 fileCallback = callback;
+                if (params.isCaptureEnabled() && Build.VERSION.SDK_INT >= 29 && openCamera()) return true;
                 Intent i = new Intent(Intent.ACTION_GET_CONTENT);
                 i.addCategory(Intent.CATEGORY_OPENABLE);
                 i.setType("image/*");
@@ -88,8 +99,43 @@ public class MainActivity extends Activity {
         if (web != null) web.evaluateJavascript("window.onResume&&window.onResume()", null);
     }
 
+    /** Kamera-App öffnen; das Foto landet direkt in „Bilder/Wir zwei“ der Galerie. */
+    private boolean openCamera() {
+        try {
+            cameraUri = newGalleryImage("WirZwei_" + System.currentTimeMillis() + ".jpg");
+            if (cameraUri == null) return false;
+            Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            i.putExtra(MediaStore.EXTRA_OUTPUT, cameraUri);
+            i.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivityForResult(i, REQ_CAMERA);
+            return true;
+        } catch (Exception e) {
+            if (cameraUri != null) getContentResolver().delete(cameraUri, null, null);
+            cameraUri = null;
+            return false;
+        }
+    }
+
+    private Uri newGalleryImage(String name) {
+        if (Build.VERSION.SDK_INT < 29) return null;
+        ContentValues v = new ContentValues();
+        v.put(MediaStore.Images.Media.DISPLAY_NAME, name);
+        v.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        v.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/Wir zwei");
+        return getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, v);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQ_CAMERA) {
+            Uri[] result = null;
+            if (resultCode == RESULT_OK && cameraUri != null) result = new Uri[]{cameraUri};
+            else if (cameraUri != null) getContentResolver().delete(cameraUri, null, null);
+            if (fileCallback != null) fileCallback.onReceiveValue(result);
+            fileCallback = null;
+            cameraUri = null;
+            return;
+        }
         if (requestCode == REQ_FILE) {
             Uri[] result = null;
             if (resultCode == RESULT_OK && data != null && data.getData() != null) result = new Uri[]{data.getData()};
@@ -178,6 +224,77 @@ public class MainActivity extends Activity {
         public void testNotif() {
             Notifier.show(MainActivity.this, 9999, "💞 So sehen eure Erinnerungen aus",
                     "Hier erinnert dich „Wir zwei“ an Geburtstage, Jahrestage & Meilensteine.");
+        }
+
+        private File photoFile(String id) {
+            if (id == null || !id.matches("[A-Za-z0-9_]{1,64}")) return null;
+            File dir = new File(getFilesDir(), "photos");
+            if (!dir.exists()) dir.mkdirs();
+            return new File(dir, id + ".jpg");
+        }
+
+        private byte[] decodeDataUrl(String dataUrl) {
+            return Base64.decode(dataUrl.substring(dataUrl.indexOf(',') + 1), Base64.DEFAULT);
+        }
+
+        @JavascriptInterface
+        public boolean savePhoto(String id, String dataUrl) {
+            File f = photoFile(id);
+            if (f == null) return false;
+            try (FileOutputStream out = new FileOutputStream(f)) {
+                out.write(decodeDataUrl(dataUrl));
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
+        @JavascriptInterface
+        public String loadPhoto(String id) {
+            File f = photoFile(id);
+            if (f == null || !f.exists()) return "";
+            try (FileInputStream in = new FileInputStream(f)) {
+                byte[] b = new byte[(int) f.length()];
+                int off = 0, r;
+                while (off < b.length && (r = in.read(b, off, b.length - off)) > 0) off += r;
+                return "data:image/jpeg;base64," + Base64.encodeToString(b, Base64.NO_WRAP);
+            } catch (Exception e) {
+                return "";
+            }
+        }
+
+        @JavascriptInterface
+        public void deletePhoto(String id) {
+            File f = photoFile(id);
+            if (f != null) f.delete();
+        }
+
+        /** Speichert ein Bild in der Galerie (Bilder/Wir zwei) und gibt die URI zurück. */
+        private Uri toGallery(String dataUrl) {
+            Uri u = newGalleryImage("WirZwei_Collage_" + System.currentTimeMillis() + ".jpg");
+            if (u == null) return null;
+            try (OutputStream out = getContentResolver().openOutputStream(u)) {
+                out.write(decodeDataUrl(dataUrl));
+                return u;
+            } catch (Exception e) {
+                getContentResolver().delete(u, null, null);
+                return null;
+            }
+        }
+
+        @JavascriptInterface
+        public boolean saveImage(String dataUrl) {
+            return toGallery(dataUrl) != null;
+        }
+
+        @JavascriptInterface
+        public boolean shareImage(String dataUrl) {
+            Uri u = toGallery(dataUrl);
+            if (u == null) return false;
+            Intent send = new Intent(Intent.ACTION_SEND).setType("image/jpeg")
+                    .putExtra(Intent.EXTRA_STREAM, u).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            runOnUiThread(() -> startActivity(Intent.createChooser(send, "Collage teilen")));
+            return true;
         }
 
         @JavascriptInterface
