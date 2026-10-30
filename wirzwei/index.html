@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Einladung · Wir zwei</title>
+<meta property="og:title" content="💞 Einladung zu „Wir zwei“">
+<meta property="og:description" content="Eure private, verschlüsselte Paar-App. Tippe, um die Einladung anzunehmen.">
+<style>
+  :root{--bg:#0d0a0e;--surface:#17121a;--line:rgba(255,255,255,.1);--text:#f4ecef;--muted:#a9979f;--rose:#eaa7b9;--rose2:#c8668a;--gold:#d9b77d}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:radial-gradient(120% 60% at 50% 0%,#3a2232 0%,#1c121a 45%,var(--bg) 80%);background-color:var(--bg);color:var(--text);font-family:system-ui,Roboto,sans-serif;display:flex;justify-content:center}
+  main{max-width:440px;width:100%;padding:48px 20px 32px;text-align:center}
+  .rings{width:96px;height:96px;margin:0 auto}
+  h1{font-family:Georgia,'Noto Serif',serif;font-weight:400;font-style:italic;font-size:34px;margin:18px 0 8px}
+  p{color:var(--muted);line-height:1.5;margin:0 0 22px}
+  .btn{display:block;width:100%;padding:16px;border-radius:16px;border:0;font-size:16px;font-weight:600;text-decoration:none;cursor:pointer}
+  .primary{background:linear-gradient(140deg,var(--rose),var(--rose2));color:#2a1420;box-shadow:0 8px 24px rgba(200,102,138,.35)}
+  .steps{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px 18px;margin:26px 0 16px}
+  .steps div{display:flex;gap:12px;margin:10px 0;color:var(--muted);font-size:14.5px;line-height:1.4}
+  .steps b{flex:none;width:26px;height:26px;border-radius:50%;background:linear-gradient(140deg,var(--gold),var(--rose2));color:#2a1420;display:flex;align-items:center;justify-content:center;font-size:13px}
+  .code{margin-top:18px;color:var(--muted);font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+  .code span{display:block;margin-top:6px;font-family:ui-monospace,monospace;font-size:24px;color:var(--text);letter-spacing:.12em;user-select:all}
+  .small{font-size:12px;color:#6f6168;margin-top:26px}
+</style>
+</head>
+<body>
+<main>
+  <svg class="rings" viewBox="0 0 120 120"><circle cx="46" cy="60" r="30" fill="none" stroke="#d9b77d" stroke-width="3"/><circle cx="74" cy="60" r="30" fill="none" stroke="#eaa7b9" stroke-width="3"/></svg>
+  <h1 id="title">Du wurdest eingeladen</h1>
+  <p>zu „Wir zwei“ – eurer privaten Paar-App. Alles ist Ende-zu-Ende verschlüsselt 🔒</p>
+  <a class="btn primary" id="open" href="#">💞 In der App öffnen</a>
+  <div class="steps">
+    <div><b>1</b><span>Installiere zuerst die App-Datei <strong>WirZwei.apk</strong>, die du per WhatsApp bekommen hast (antippen → Installieren).</span></div>
+    <div><b>2</b><span>Komm dann hierher zurück und tippe auf <strong>„In der App öffnen“</strong>.</span></div>
+    <div><b>3</b><span>Klappt das nicht? Öffne die App, wähle „Ich wurde eingeladen“ und gib den Code unten ein.</span></div>
+  </div>
+  <div class="code" id="codeBox">Dein Code<span id="code">–</span></div>
+  <p class="small">Diese Seite speichert und sendet nichts. Der geheime Schlüssel steht nur im Link nach dem #-Zeichen und wird nie an einen Server übertragen.</p>
+</main>
+<script>
+  var h = new URLSearchParams(location.hash.slice(1));
+  var c = (h.get('c') || '').toUpperCase(), k = h.get('k') || '', n = h.get('n') || '';
+  if (n) document.getElementById('title').textContent = n + ' lädt dich ein';
+  if (c) document.getElementById('code').textContent = c.replace(/(.{5})(?=.)/g, '$1-');
+  else document.getElementById('codeBox').style.display = 'none';
+  document.getElementById('open').href = 'intent://join?c=' + encodeURIComponent(c) + '&k=' + encodeURIComponent(k) + '&n=' + encodeURIComponent(n) +
+    '#Intent;scheme=wirzwei;package=de.wirzwei.app;S.browser_fallback_url=' + encodeURIComponent(location.href.split('#')[0] + '#c=' + c + '&n=' + encodeURIComponent(n) + '&missing=1') + ';end';
+  if (h.get('missing')) document.querySelector('.steps').insertAdjacentHTML('afterbegin', '<div style="color:#eaa7b9"><b>!</b><span>Die App ist noch nicht installiert – bitte zuerst Schritt 1. Danach den Link aus WhatsApp erneut öffnen.</span></div>');
+</script>
+</body>
+</html>
